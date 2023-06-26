@@ -1,0 +1,21 @@
+{
+  "name": "attendance",
+  "version": "1.0.0",
+  "description": "Attendance management systme ",
+  "main": "index.js",
+  "author": "Metclan (Harmony); ",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "formidable": "v2",
+    "mysql": "^2.18.1"
+  },
+  "scripts": {
+    "dev": "nodemon index.js"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}
