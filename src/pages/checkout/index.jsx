@@ -5,7 +5,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 
 //importing components
 import Logo from "../../assets/logo.png";
-import { SyncLoader } from "react-spinners";
+import { FadeLoader } from "react-spinners";
 import { toast } from "react-toastify";
 
 //importing icons
@@ -64,11 +64,15 @@ const CheckOut = () => {
   }, [pin]);
   return (
     <div className="max-w-[95%] sm:max-w-[400px] mx-auto py-8 rounded-lg mt-8">
-      {verifyPinQuery.isLoading && (
-        <div className="w-full flex justify-center mt-8">
-          <SyncLoader color="#199432" size={8} />
-        </div>
-      )}
+      <div className="w-full flex justify-center mt-8">
+        <FadeLoader
+          color="#199432"
+          height={10}
+          width={4}
+          margin={-6}
+          loading={verifyPinQuery.isLoading}
+        />
+      </div>
       {verifyPinQuery.isSuccess && (
         <div>
           <div className="mt-14">

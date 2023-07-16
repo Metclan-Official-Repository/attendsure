@@ -17,6 +17,7 @@ connection.connect((err) => {
     if (err) {
       if (err.errno === 1064) {
         console.log("tables already exist");
+        console.log(err);
       } else {
         console.log("there was an error creating tables", err.sqlMessage);
       }

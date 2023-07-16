@@ -6,7 +6,12 @@ const uploadDir = join(__dirname, "../..", "public", "files", "images");
 const {
   addEmployeeQuery,
   fetchEmployeeQuery,
+  deleteEmployeeQuery,
 } = require("../../queries/employees/index");
+
+const {
+  addEmployeeLocationQuery,
+} = require("../../queries/employees_locations/");
 const form = formidable({
   multiples: true,
   uploadDir: uploadDir,
@@ -47,7 +52,7 @@ const imageUploadPromise = (file) => {
   });
 };
 // handle file upload promise
-const fileUploadPromise = (uploadImage, fields) => {
+const fileUploadPromise = (uploadImage, fields, businessId) => {
   return new Promise((resolve, reject) => {
     // Parse the form data and resolve the promise with the fields and image URL
     const {
@@ -60,11 +65,14 @@ const fileUploadPromise = (uploadImage, fields) => {
       city,
       jobTitle,
       departmentId,
+      shift,
       pin,
+      employementStatus,
     } = fields;
     const imageIsSet = 0;
     const isCheckedIn = 0;
     const sessionId = null;
+    const isActive = 1;
     connection.query(
       addEmployeeQuery(
         firstName,
@@ -80,7 +88,11 @@ const fileUploadPromise = (uploadImage, fields) => {
         imageIsSet,
         uploadImage,
         isCheckedIn,
-        sessionId
+        shift,
+        isActive,
+        sessionId,
+        employementStatus,
+        businessId
       ),
       (err, fields) => {
         if (err) {
@@ -91,8 +103,35 @@ const fileUploadPromise = (uploadImage, fields) => {
     );
   });
 };
-
+//add employee location promise
+const addEmployeeLocationPromise = (locations, employeeId) => {
+  return new Promise((resolve, reject) => {
+    //handle one location
+    if (typeof locations === "string") {
+      connection.query(
+        addEmployeeLocationQuery(employeeId, locations),
+        (err, results) => {
+          if (err) return reject();
+          resolve(results);
+        }
+      );
+    }
+    //handle multiple locations
+    if (typeof locations === "object") {
+      locations.map((location) => {
+        connection.query(
+          addEmployeeLocationQuery(employeeId, location),
+          (err, results) => {
+            if (err) return reject();
+          }
+        );
+      });
+      return resolve("added");
+    }
+  });
+};
 const addEmployee = (req, res) => {
+  const businessId = req.businessId;
   form.parse(req, async (err, fields, files) => {
     if (err) {
       res
@@ -102,11 +141,20 @@ const addEmployee = (req, res) => {
     }
     try {
       const uploadImage = await imageUploadPromise(files);
-      const addEmployeePromise = await fileUploadPromise(uploadImage, fields);
+      const addEmployeePromise = await fileUploadPromise(
+        uploadImage,
+        fields,
+        businessId
+      );
+      const locationPromise = await addEmployeeLocationPromise(
+        fields.locations,
+        addEmployeePromise.insertId
+      );
       res
         .status(201)
-        .json({ success: true, message: "success", data: addEmployeePromise });
+        .json({ success: true, message: "success", data: locationPromise });
     } catch (err) {
+      console.log(err);
       res
         .status(400)
         .json({ success: false, message: "success", data: "failure" });
@@ -121,19 +169,44 @@ const fetchEmployee = (req, res) => {
         .status(401)
         .json({ success: false, message: "failure", data: err });
     }
-    connection.query(fetchEmployeeQuery(), (err, fields) => {
+    const { id } = req.query;
+    const businessId = req.businessId;
+    connection.query(
+      fetchEmployeeQuery(Number(id), businessId),
+      (err, fields) => {
+        if (err) {
+          return res
+            .status(401)
+            .json({ success: false, message: "failure", data: err });
+        }
+        res
+          .status(200)
+          .json({ success: true, message: "success", data: fields });
+      }
+    );
+  });
+};
+
+const editEmployee = (req, res) => {};
+let num = 0;
+const deleteEmployee = (req, res) => {
+  form.parse(req, (err, fields) => {
+    const { id } = fields;
+    if (err) {
+      return res
+        .status(401)
+        .json({ success: false, message: "failure", data: err });
+    }
+    connection.query(deleteEmployeeQuery(id), (err, fields) => {
       if (err) {
         return res
           .status(401)
-          .json({ success: false, message: "failure", data: err });
+          .json({ success: false, message: "An error occurred", data: err });
       }
       res.status(200).json({ success: true, message: "success", data: fields });
     });
   });
 };
-
-const editEmployee = () => {};
-const deleteEmployee = () => {};
 module.exports = {
   addEmployee,
   editEmployee,

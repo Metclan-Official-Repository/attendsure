@@ -1,21 +1,27 @@
 import axios from "axios";
-import { baseUrl } from "..";
+
 const addEmployee = (data) => {
   const response = axios({
-    baseURL: baseUrl(),
     url: "employees/new",
     method: "post",
     data: data,
   });
   return response;
 };
-const fetchEmployee = (data) => {
+const fetchEmployee = (params) => {
   const response = axios({
-    baseURL: baseUrl(),
     url: "employees/fetch",
     method: "get",
-    params: data,
+    params: params,
   });
   return response;
 };
-export { addEmployee, fetchEmployee };
+const deleteEmployee = (data) => {
+  const response = axios({
+    url: "employees/delete",
+    method: "delete",
+    data: data,
+  });
+  return response;
+};
+export { addEmployee, fetchEmployee, deleteEmployee };

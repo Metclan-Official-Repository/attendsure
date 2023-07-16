@@ -1,8 +1,6 @@
-import { baseUrl } from "..";
 import axios from "axios";
 const checkIn = (data) => {
   const response = axios({
-    baseURL: baseUrl(),
     url: "attendance/check-in",
     method: "post",
     data: data,
@@ -11,7 +9,6 @@ const checkIn = (data) => {
 };
 const verifyPin = (data) => {
   const response = axios({
-    baseURL: baseUrl(),
     url: "attendance/verify-pin",
     method: "get",
     params: data,
@@ -21,7 +18,6 @@ const verifyPin = (data) => {
 
 const checkOut = (data) => {
   const response = axios({
-    baseURL: baseUrl(),
     url: "attendance/check-out",
     method: "put",
     data: data,
@@ -30,7 +26,6 @@ const checkOut = (data) => {
 };
 const fetchAttendance = (data) => {
   const response = axios({
-    baseURL: baseUrl(),
     url: "attendance/fetch",
     method: "get",
     params: data,

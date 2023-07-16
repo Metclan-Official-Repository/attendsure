@@ -1,14 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 //importing components
 import { EmployeeCard } from "../../components";
-import { SyncLoader } from "react-spinners";
+import { FadeLoader } from "react-spinners";
 
 //importing icons
 import { BiPlusCircle } from "react-icons/bi";
 
 //importing services
 import { fetchEmployee } from "../../api/employees";
-const Employees = () => {
+const Employees = ({ deleteItem }) => {
   const employeesQuery = useQuery({
     queryKey: ["EMPLOYEES"],
     queryFn: () => fetchEmployee(),
@@ -30,11 +30,15 @@ const Employees = () => {
           </a>
         </div>
       </div>
-      {employeesQuery.isLoading && (
-        <div className="w-full flex justify-center mt-8">
-          <SyncLoader color="#199432" size={8} />
-        </div>
-      )}
+      <div className="w-full flex justify-center mt-8">
+        <FadeLoader
+          color="#199432"
+          height={10}
+          width={4}
+          margin={-6}
+          loading={employeesQuery.isLoading}
+        />
+      </div>
       <div className="grid gap-4 xs:grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 justify-items-center mt-4">
         {employeesQuery.isSuccess &&
           employeesQuery.data.data.data.map(
@@ -60,6 +64,7 @@ const Employees = () => {
                 city={city}
                 id={id}
                 imageUrl={image_url}
+                deleteItem={deleteItem}
               />
             )
           )}

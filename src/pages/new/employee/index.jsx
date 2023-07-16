@@ -1,23 +1,35 @@
 //importing hooks
 import { useState, useRef, useEffect } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQueries } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+
 //importing components
 import { toast } from "react-toastify";
+import makeAnimated from "react-select/animated";
+import Select from "react-select";
+
 //importing icons
 import { BiArrowBack } from "react-icons/bi";
 import { CgAsterisk } from "react-icons/cg";
+
 //importing images
 import DefaultPic from "../../../assets/default.png";
+
 //importing services
 import { addEmployee } from "../../../api/employees";
-import { fetchDepartments } from "../../../api/departments/index";
+import { fetchDepartments } from "../../../api/departments/";
+import { fetchShift } from "../../../api/shift/";
+import { fetchLocations } from "../../../api/locations/";
+
+//importing constants
+import { employementStatuses } from "../../../constants";
 
 const NewEmployee = () => {
   const navigate = useNavigate();
   const uploadedImageRef = useRef();
   const imagePreviewRef = useRef();
   const employeeInfoForm = useRef();
+  const animatedComponents = makeAnimated();
   const reader = new FileReader();
   const [profilePicutureIsSet, setProfilePicutureIsSet] = useState(false);
   const [employeeInfo, setEmployeeInfo] = useState({
@@ -29,10 +41,13 @@ const NewEmployee = () => {
     address: "",
     city: "",
     jobTitle: "",
+    employementStatus: "fulltime",
+    shift: "",
     departmentId: "1",
     pin: "0000",
     confirmPin: "",
     image: "",
+    locations: [],
     validatePin: function () {
       if (this.pin.length < 4) {
         toast.error("Pin code must be 4 digits");
@@ -52,6 +67,12 @@ const NewEmployee = () => {
     setEmployeeInfo((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   const handleFocus = (e) => setActiveField(e.target.name);
   const handleBlur = () => setActiveField(null);
+  const handleSelect = (selectedOption) => {
+    setEmployeeInfo((prev) => ({
+      ...prev,
+      locations: selectedOption,
+    }));
+  };
   const handleSubmit = (e) => {
     e.preventDefault();
     if (employeeInfo.validatePin()) {
@@ -109,12 +130,34 @@ const NewEmployee = () => {
     },
   });
 
-  //fetch request
-  const departmentQuery = useQuery({
-    queryKey: ["DEPARTMENTS"],
-    queryFn: () => fetchDepartments(),
+  //fetch queries
+  const fetchQueries = useQueries({
+    queries: [
+      {
+        queryKey: ["SHIFTS"],
+        queryFn: () => fetchShift(),
+      },
+      {
+        queryKey: ["DEPARTMENTS"],
+        queryFn: () => fetchDepartments(),
+      },
+      {
+        queryKey: ["LOCATIONS"],
+        queryFn: () => fetchLocations(),
+        onSuccess: (data) => {
+          setEmployeeInfo((prev) => ({
+            ...prev,
+            locations: [
+              {
+                value: data.data.data[0].id,
+                label: `${data.data.data[0].name}(${data.data.data[0].location_unique_name})`,
+              },
+            ],
+          }));
+        },
+      },
+    ],
   });
-
   useEffect(() => {
     if (uploadedImageRef.current.files.length) {
       setProfilePicutureIsSet(true);
@@ -162,13 +205,14 @@ const NewEmployee = () => {
                   type={"text"}
                   value={employeeInfo.firstName}
                   placeholder="Your first name"
-                  onChange={(e) => handleChange(e)}
-                  onFocus={(e) => handleFocus(e)}
-                  onBlur={(e) => handleBlur(e)}
+                  onChange={handleChange}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
                   style={{
                     borderColor: activeField === "firstName" && "#21c55d",
                   }}
                   className="outline-none text-sm border py-2 px-2 rounded-sm transition"
+                  disabled={employeeMutation.isLoading}
                   required
                 />
               </div>
@@ -184,13 +228,14 @@ const NewEmployee = () => {
                   type={"text"}
                   value={employeeInfo.lastName}
                   placeholder="Your last name"
-                  onChange={(e) => handleChange(e)}
-                  onFocus={(e) => handleFocus(e)}
-                  onBlur={(e) => handleBlur(e)}
+                  onChange={handleChange}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
                   style={{
-                    borderColor: activeField === "lastNames" && "#21c55d",
+                    borderColor: activeField === "lastName" && "#21c55d",
                   }}
                   className="outline-none text-sm border py-2 px-2 rounded-sm transition"
+                  disabled={employeeMutation.isLoading}
                   required
                 />
               </div>
@@ -201,13 +246,14 @@ const NewEmployee = () => {
                   type={"text"}
                   value={employeeInfo.middleName}
                   placeholder="Your middle name"
-                  onChange={(e) => handleChange(e)}
-                  onFocus={(e) => handleFocus(e)}
-                  onBlur={(e) => handleBlur(e)}
+                  onChange={handleChange}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
                   style={{
                     borderColor: activeField === "middleName" && "#21c55d",
                   }}
                   className="outline-none text-sm border py-2 px-2 rounded-sm transition"
+                  disabled={employeeMutation.isLoading}
                 />
               </div>
             </div>
@@ -229,12 +275,13 @@ const NewEmployee = () => {
                   value={employeeInfo.pin}
                   placeholder="Enter 4 digits pin"
                   onChange={(e) => setPin(e)}
-                  onFocus={(e) => handleFocus(e)}
-                  onBlur={(e) => handleBlur(e)}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
                   style={{
                     borderColor: activeField === "pin" && "#21c55d",
                   }}
                   className="outline-none text-sm border py-2 px-2 rounded-sm transition"
+                  disabled={employeeMutation.isLoading}
                   required
                 />
               </div>
@@ -245,19 +292,21 @@ const NewEmployee = () => {
                   type={"password"}
                   value={employeeInfo.confirmPin}
                   placeholder="Confirm pin"
-                  onChange={(e) => setPin(e)}
-                  onFocus={(e) => handleFocus(e)}
-                  onBlur={(e) => handleBlur(e)}
+                  onChange={setPin}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
                   style={{
                     borderColor: activeField === "confirmPin" && "#21c55d",
                   }}
                   className="outline-none text-sm border py-2 px-2 rounded-sm transition"
+                  disabled={employeeMutation.isLoading}
                 />
               </div>
               <button
                 type="button"
                 className="bg-green-500 text-white px-2 py-1 text-sm mt-3 hover:bg-green-600 rounded-[3px]"
                 onClick={() => resetPin()}
+                disabled={employeeMutation.isLoading}
               >
                 Reset pin
               </button>
@@ -281,13 +330,14 @@ const NewEmployee = () => {
                   type={"tel"}
                   value={employeeInfo.mobile}
                   placeholder="mobile number"
-                  onChange={(e) => handleChange(e)}
-                  onFocus={(e) => handleFocus(e)}
-                  onBlur={(e) => handleBlur(e)}
+                  onChange={handleChange}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
                   style={{
                     borderColor: activeField === "mobile" && "#21c55d",
                   }}
                   className="outline-none text-sm border py-2 px-2 rounded-sm transition"
+                  disabled={employeeMutation.isLoading}
                   required
                 />
               </div>
@@ -298,13 +348,14 @@ const NewEmployee = () => {
                   type={"email"}
                   value={employeeInfo.email}
                   placeholder="Your email address"
-                  onChange={(e) => handleChange(e)}
-                  onFocus={(e) => handleFocus(e)}
-                  onBlur={(e) => handleBlur(e)}
+                  onChange={handleChange}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
                   style={{
                     borderColor: activeField === "email" && "#21c55d",
                   }}
                   className="outline-none text-sm border py-2 px-2 rounded-sm transition"
+                  disabled={employeeMutation.isLoading}
                 />
               </div>
               <div className="flex flex-col gap-1 mt-2">
@@ -314,13 +365,14 @@ const NewEmployee = () => {
                   type={"text"}
                   value={employeeInfo.address}
                   placeholder="Your address"
-                  onChange={(e) => handleChange(e)}
-                  onFocus={(e) => handleFocus(e)}
-                  onBlur={(e) => handleBlur(e)}
+                  onChange={handleChange}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
                   style={{
                     borderColor: activeField === "address" && "#21c55d",
                   }}
                   className="outline-none text-sm border py-2 px-2 rounded-sm transition"
+                  disabled={employeeMutation.isLoading}
                 />
               </div>
               <div className="flex flex-col gap-1 mt-2">
@@ -335,13 +387,14 @@ const NewEmployee = () => {
                   type={"text"}
                   value={employeeInfo.city}
                   placeholder="City"
-                  onChange={(e) => handleChange(e)}
-                  onFocus={(e) => handleFocus(e)}
-                  onBlur={(e) => handleBlur(e)}
+                  onChange={handleChange}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
                   style={{
                     borderColor: activeField === "city" && "#21c55d",
                   }}
                   className="outline-none text-sm border py-2 px-2 rounded-sm transition"
+                  disabled={employeeMutation.isLoading}
                   required
                 />
               </div>
@@ -365,14 +418,16 @@ const NewEmployee = () => {
                   onChange={(e) => handleChange(e)}
                   accept=".jpg, .jpeg, .png"
                   className="hidden"
+                  disabled={employeeMutation.isLoading}
                 />
               </label>
-              <div className="w-1/2 flex items-center justify-center border rounded-lg relative h-32">
+              <div className="w-1/2 flex items-center justify-center border rounded-lg relative h-32 overflow-hidden">
                 <img
                   src={""}
                   alt="Profile"
                   className="w-24"
                   ref={imagePreviewRef}
+                  disabled={employeeMutation.isLoading}
                 />
                 {profilePicutureIsSet && (
                   <div className="w-full h-full absolute top-0 left-0 bg-gray-500 hover:opacity-90 rounded-lg flex items-center flex-col justify-center gap-4 opacity-0 transition cursor-pointer">
@@ -396,6 +451,69 @@ const NewEmployee = () => {
         </div>
         {/* Job details  */}
         <div className="max-w-[600px]">
+          <h3 className="text-xl text-gray-800 mt-4">Shift information</h3>
+          <div className="border py-6 px-3 rounded-lg mt-2 shadow">
+            <div className="flex flex-col gap-1 mt-2">
+              <div className="flex items-center">
+                <label className="text-sm">Employement status</label>
+                <span className="text-red-600 text-sm">
+                  <CgAsterisk />
+                </span>
+              </div>
+              <select
+                name={"employementStatus"}
+                value={employeeInfo.employementStatus}
+                onChange={handleChange}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                style={{
+                  borderColor: activeField === "employementStatus" && "#21c55d",
+                }}
+                className="outline-none text-sm border py-2 px-2 rounded-sm transition bg-white"
+                disabled={employeeMutation.isLoading}
+                required
+              >
+                {employementStatuses.map(({ value, title }) => (
+                  <option key={value} value={value}>
+                    {title}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col gap-1 mt-2">
+              <div className="flex items-center">
+                <label className="text-sm">Employement shift</label>
+                <span className="text-red-600 text-sm">
+                  <CgAsterisk />
+                </span>
+              </div>
+              <select
+                name={"shift"}
+                value={employeeInfo.shift}
+                onChange={handleChange}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                style={{
+                  borderColor: activeField === "shift" && "#21c55d",
+                }}
+                className="outline-none text-sm border py-2 px-2 rounded-sm transition bg-white"
+                disabled={
+                  fetchQueries[0].isLoading || employeeMutation.isLoading
+                }
+                required
+              >
+                {fetchQueries[0].isSuccess &&
+                  fetchQueries[0].data.data.data.map(({ name, id }) => (
+                    <option key={id} value={id}>
+                      {name}
+                    </option>
+                  ))}
+              </select>
+            </div>
+          </div>
+        </div>
+        {/* Job details  */}
+        <div className="max-w-[600px]">
           <h3 className="text-xl text-gray-800 mt-4">Job Details</h3>
           <div className="border py-6 px-3 rounded-lg mt-2 shadow">
             <div className="flex flex-col gap-1 mt-2">
@@ -410,13 +528,14 @@ const NewEmployee = () => {
                 type={"text"}
                 value={employeeInfo.jobTitle}
                 placeholder="What's your job title"
-                onChange={(e) => handleChange(e)}
-                onFocus={(e) => handleFocus(e)}
-                onBlur={(e) => handleBlur(e)}
+                onChange={handleChange}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
                 style={{
                   borderColor: activeField === "jobTitle" && "#21c55d",
                 }}
                 className="outline-none text-sm border py-2 px-2 rounded-sm transition"
+                disabled={employeeMutation.isLoading}
                 required
               />
             </div>
@@ -430,17 +549,20 @@ const NewEmployee = () => {
               <select
                 name={"departmentId"}
                 value={employeeInfo.departmentId}
-                onChange={(e) => handleChange(e)}
-                onFocus={(e) => handleFocus(e)}
-                onBlur={(e) => handleBlur(e)}
+                onChange={handleChange}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
                 style={{
                   borderColor: activeField === "department" && "#21c55d",
                 }}
                 className="outline-none text-sm border py-2 px-2 rounded-sm transition bg-white"
+                disabled={
+                  fetchQueries[1].isLoading || employeeMutation.isLoading
+                }
                 required
               >
-                {departmentQuery.isSuccess &&
-                  departmentQuery.data.data.data.map(({ name, id }) => (
+                {fetchQueries[1].isSuccess &&
+                  fetchQueries[1].data.data.data.map(({ name, id }) => (
                     <option key={id} value={id}>
                       {name}
                     </option>
@@ -449,16 +571,54 @@ const NewEmployee = () => {
             </div>
           </div>
         </div>
+        {/* Location information  */}
+        <div className="max-w-[600px]">
+          <h3 className="text-xl text-gray-800 mt-4">Work Location</h3>
+          <div className="border py-6 px-3 rounded-lg mt-2 shadow">
+            <Select
+              name={"locations"}
+              classNames={{
+                control: (state) =>
+                  state.isFocused ? "border-green-600" : "border-grey-300",
+              }}
+              closeMenuOnSelect={false}
+              components={animatedComponents}
+              value={employeeInfo.locations}
+              onChange={handleSelect}
+              isLoading={
+                fetchQueries[2].isLoading || employeeMutation.isLoading
+              }
+              disabled={fetchQueries[2].isLoading || employeeMutation.isLoading}
+              options={
+                fetchQueries[2].isSuccess &&
+                fetchQueries[2].data.data.data.map(
+                  ({ name, id, location_unique_name }) => ({
+                    value: id,
+                    label: `${name}(${location_unique_name})`,
+                  })
+                )
+              }
+              isMulti
+              required
+            />
+          </div>
+        </div>
         <div className="flex justify-between w-full max-w-[600px] mt-8">
           <button
             type="button"
             className="border py-2 px-4 rounded-lg hover:bg-gray-100 transition"
+            disabled={employeeMutation.isLoading}
           >
             Discard
           </button>
           <button
             type={"submit"}
             className="border py-2 px-6 bg-green-500 text-white rounded-lg transition hover:bg-green-600"
+            disabled={employeeMutation.isLoading}
+            style={{
+              opacity: employeeMutation.isLoading && 0.7,
+              cursor: employeeInfoForm.isLoading ? "not-allowed" : "pointer",
+            }}
           >
             Save
           </button>

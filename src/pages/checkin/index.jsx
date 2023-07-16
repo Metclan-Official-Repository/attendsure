@@ -9,7 +9,7 @@ import { checkIn, verifyPin } from "../../api/attendance";
 import Logo from "../../assets/logo.png";
 
 //importing components
-import { SyncLoader } from "react-spinners";
+import { FadeLoader } from "react-spinners";
 
 //importing icons
 import { useEffect, useState } from "react";
@@ -66,11 +66,15 @@ const CheckIn = () => {
   }, [pin]);
   return (
     <div className="max-w-[95%] sm:max-w-[400px] mx-auto py-8 rounded-lg mt-8">
-      {verifyPinQuery.isLoading && (
-        <div className="w-full flex justify-center mt-8">
-          <SyncLoader color="#199432" size={8} />
-        </div>
-      )}
+      <div className="w-full flex justify-center mt-8">
+        <FadeLoader
+          color="#199432"
+          height={10}
+          width={4}
+          margin={-6}
+          loading={verifyPinQuery.isLoading}
+        />
+      </div>
       {verifyPinQuery.isSuccess && (
         <div>
           <div className="mt-14">

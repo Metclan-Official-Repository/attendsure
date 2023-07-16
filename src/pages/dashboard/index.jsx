@@ -2,7 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 //importing components
 import { AttendanceCard } from "../../components";
-import { SyncLoader } from "react-spinners";
+import { FadeLoader } from "react-spinners";
 
 //importing services
 import { fetchEmployee } from "../../api/employees";
@@ -18,11 +18,15 @@ const Dashboard = () => {
         <div className="w-16 h-1 bg-blue-400"></div>
         <h4 className="text-xl font-medium text-gray-600">Dashboard</h4>
       </div>
-      {employeesQuery.isLoading && (
-        <div className="w-full flex justify-center mt-8">
-          <SyncLoader color="#199432" size={8} />
-        </div>
-      )}
+      <div className="w-full flex justify-center mt-8">
+        <FadeLoader
+          color="#199432"
+          height={10}
+          width={4}
+          margin={-6}
+          loading={employeesQuery.isLoading}
+        />
+      </div>
       <div className="grid gap-4 xs:grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 justify-items-center mt-4">
         {employeesQuery.isSuccess &&
           employeesQuery.data.data.data.map(

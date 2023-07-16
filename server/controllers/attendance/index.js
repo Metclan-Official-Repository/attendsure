@@ -9,11 +9,10 @@ const {
   fetchAttendanceQuery,
 } = require("../../queries/attendance/index");
 
-const form = formidable({
-  multiples: true,
-});
-
 const checkIn = (req, res) => {
+  const form = formidable({
+    multiples: true,
+  });
   form.parse(req, (err, fields) => {
     if (err) {
       return res.status(401).json({
@@ -83,6 +82,10 @@ const checkIn = (req, res) => {
 };
 
 const checkOut = (req, res) => {
+  const form = formidable({
+    multiples: true,
+  });
+
   // Implement the check-out logic here
   form.parse(req, (err, fields) => {
     if (err) {
@@ -149,6 +152,10 @@ const checkOut = (req, res) => {
 };
 
 const verifyPin = (req, res) => {
+  const form = formidable({
+    multiples: true,
+  });
+
   form.parse(req, (err, fields) => {
     if (err) {
       return res.status(401).json({
@@ -176,6 +183,10 @@ const verifyPin = (req, res) => {
   });
 };
 const fetchAttendance = (req, res) => {
+  const form = formidable({
+    multiples: true,
+  });
+
   form.parse(req, (err, fields) => {
     if (err) {
       return res.status(401).json({

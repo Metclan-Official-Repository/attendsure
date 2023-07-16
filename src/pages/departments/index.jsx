@@ -5,12 +5,12 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchDepartments } from "../../api/departments";
 
 //importing components
-import { SyncLoader } from "react-spinners";
+import { FadeLoader } from "react-spinners";
 //importing icons
 import { BiPlusCircle } from "react-icons/bi";
 import { DepartmentCard } from "../../components";
 
-const Department = () => {
+const Department = ({ deleteItem }) => {
   const departmentsQuery = useQuery({
     queryKey: ["DEPARTMENTS"],
     queryFn: () => fetchDepartments(),
@@ -35,14 +35,23 @@ const Department = () => {
       <div className="grid xs:grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 justify-items-center gap-2 gap-y-2 mt-4">
         {departmentsQuery.isSuccess &&
           departmentsQuery.data.data.data.map(({ name, id }) => (
-            <DepartmentCard name={name} key={id} />
+            <DepartmentCard
+              name={name}
+              key={id}
+              id={id}
+              deleteItem={deleteItem}
+            />
           ))}
       </div>
-      {departmentsQuery.isLoading && (
-        <div className="w-full flex justify-center mt-8">
-          <SyncLoader color="#199432" size={8} />
-        </div>
-      )}
+      <div className="w-full flex justify-center mt-8">
+        <FadeLoader
+          color="#199432"
+          height={10}
+          width={4}
+          margin={-6}
+          loading={departmentsQuery.isLoading}
+        />
+      </div>
     </div>
   );
 };

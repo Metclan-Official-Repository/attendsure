@@ -1,24 +1,36 @@
 import axios from "axios";
-import { baseUrl } from "..";
 const addDepartment = (name) => {
   const response = axios({
-    baseURL: baseUrl(),
     url: "departments/new",
     method: "post",
     data: name,
   });
   return response;
 };
-const fetchDepartments = () => {
+const fetchDepartments = (params) => {
   const response = axios({
-    baseURL: baseUrl(),
     url: "departments/fetch",
     method: "get",
-    data: "",
+    params: params,
   });
   return response;
 };
 
-const editDepartment = () => {};
-const deleteDepartment = () => {};
+const editDepartment = (data) => {
+  const response = axios({
+    url: "departments/edit",
+    method: "put",
+    data: data,
+  });
+  return response;
+};
+
+const deleteDepartment = (data) => {
+  const response = axios({
+    url: "departments/delete",
+    method: "delete",
+    data: data,
+  });
+  return response;
+};
 export { addDepartment, editDepartment, deleteDepartment, fetchDepartments };
