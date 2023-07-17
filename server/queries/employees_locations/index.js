@@ -4,4 +4,12 @@ const addEmployeeLocationQuery = (employeeId, locationId) => {
     VALUES(${employeeId}, ${locationId})
     `;
 };
-module.exports = { addEmployeeLocationQuery };
+const fetchEmployeeLocationsQuery = (employeeId) => {
+  return `
+        SELECT *
+        FROM employee_locations
+        JOIN business_locations ON business_locations.id = employee_locations.location_id
+        WHERE employee_id = ${employeeId}
+    `;
+};
+module.exports = { addEmployeeLocationQuery, fetchEmployeeLocationsQuery };

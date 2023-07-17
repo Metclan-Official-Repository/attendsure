@@ -45,7 +45,7 @@ const deleteEmployeeQuery = (id) => {
     WHERE id=${id}
   `;
 };
-const editEmployee = (
+const editEmployeeQuery = (
   id,
   firstName,
   lastName,
@@ -60,16 +60,21 @@ const editEmployee = (
   imageIsSet,
   imageUrl,
   isCheckedIn,
-  sessionId
+  shiftId,
+  isActive,
+  sessionId,
+  employmentStatus,
+  businessId
 ) => {
   return `
     UPDATE employees
-    SET first_name = '${firstName}', last_name='${lastName}', middle_name='${middleName}', mobile='${mobile}', email = '${email}', address='${address}', city='${city}', job_title='${jobTitle}', department_id='${departmentId}', pin='${pin}', image_is_set=${imageIsSet}, image_url = ${imageUrl}, is_checkedin=${isCheckedIn}, session_id = ${sessionId}
-    WHERE id = ${id}
+    SET first_name = '${firstName}', last_name='${lastName}', middle_name='${middleName}', mobile='${mobile}', email = '${email}', address='${address}', city='${city}', job_title='${jobTitle}', department_id='${departmentId}', pin='${pin}', image_is_set=${imageIsSet}, image_url = ${imageUrl}, is_checkedin=${isCheckedIn}, session_id = ${sessionId}, shift_id = ${shiftId}, is_active = ${isActive}, employment_status = "${employmentStatus}"
+    WHERE id = ${id} AND business_id = ${businessId}
   `;
 };
 module.exports = {
   addEmployeeQuery,
   fetchEmployeeQuery,
+  editEmployeeQuery,
   deleteEmployeeQuery,
 };

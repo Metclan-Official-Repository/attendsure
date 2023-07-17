@@ -8,7 +8,7 @@ const {
   disableLocationQuery,
   enableLocationQuery,
   editLocationQuery,
-} = require("../../queries/locations/");
+} = require("../../queries/locations");
 const addLocation = async (req, res, next) => {
   const form = formidable({
     multiples: true,

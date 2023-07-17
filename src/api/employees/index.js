@@ -24,4 +24,12 @@ const deleteEmployee = (data) => {
   });
   return response;
 };
-export { addEmployee, fetchEmployee, deleteEmployee };
+const editEmployee = (data) => {
+  const response = axios({
+    url: "employees/edit",
+    method: "put",
+    data: data,
+  });
+  return response;
+};
+export { addEmployee, fetchEmployee, deleteEmployee, editEmployee };

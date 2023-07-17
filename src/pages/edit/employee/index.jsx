@@ -7,6 +7,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import makeAnimated from "react-select/animated";
 import Select from "react-select";
+import { FadeLoader } from "react-spinners";
 
 //importing icons
 import { BiArrowBack } from "react-icons/bi";
@@ -16,11 +17,14 @@ import { CgAsterisk } from "react-icons/cg";
 import DefaultPic from "../../../assets/default.png";
 
 //importing services
-import { addEmployee } from "../../../api/employees";
 import { fetchDepartments } from "../../../api/departments/";
 import { fetchShift } from "../../../api/shift/";
 import { fetchLocations } from "../../../api/locations/";
-import { fetchEmployee } from "../../../api/employees";
+import { fetchEmployee, editEmployee } from "../../../api/employees";
+import { fetchEmployeeLocation } from "../../../api/employee_locations";
+
+//importing functions
+import { baseUrl } from "../../../api";
 
 //importing constants
 import { employementStatuses } from "../../../constants";
@@ -28,6 +32,7 @@ import { employementStatuses } from "../../../constants";
 const EditEmployee = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [loadedEmployeeData, setLoadedEmployeeData] = useState(false);
   const search = new URLSearchParams(location.search);
   const id = search.get("employeeId");
   const uploadedImageRef = useRef();
@@ -124,10 +129,21 @@ const EditEmployee = () => {
   };
   //employees mutation
   const employeeMutation = useMutation({
-    mutationFn: () => addEmployee(new FormData(employeeInfoForm.current)),
+    mutationFn: () => {
+      const formData = new FormData(employeeInfoForm.current);
+
+      //additional information needed in the database
+      formData.append("imageIsSet", profilePicutureIsSet);
+      formData.append("id", employeeInfo.id);
+      formData.append("isCheckedIn", employeeInfo.isCheckedIn);
+      formData.append("sessionId", employeeInfo.sessionId);
+      formData.append("isActive", employeeInfo.isActive);
+      formData.append("imageUrl", employeeInfo.imageUrl);
+      return editEmployee(formData);
+    },
     onSuccess: () => {
-      toast.success("Employee added");
-      navigate("/employees");
+      toast.success("Employee updated");
+      // navigate("/employees");
     },
     onError: () => {
       toast.error("An error occurred");
@@ -146,6 +162,28 @@ const EditEmployee = () => {
         queryFn: () => fetchDepartments(),
       },
       {
+        queryKey: ["LOCATIONS"],
+        queryFn: () => fetchLocations(),
+        onSuccess: (data) => {},
+      },
+      {
+        queryKey: ["EMPLOYEE_LOCATION"],
+        queryFn: () =>
+          fetchEmployeeLocation({
+            employeeId: id,
+          }),
+        onSuccess: (data) => {
+          //map through the fetched data and change the keys name
+          const fetchedLocations = data.data.data.map(
+            ({ name, location_unique_name, id }) => ({
+              value: id,
+              label: `${name}(${location_unique_name})`,
+            })
+          );
+          setEmployeeInfo((prev) => ({ ...prev, locations: fetchedLocations }));
+        },
+      },
+      {
         queryKey: ["EMPLOYEE"],
         queryFn: () =>
           fetchEmployee({
@@ -153,6 +191,7 @@ const EditEmployee = () => {
           }),
         onSuccess: (data) => {
           const {
+            id,
             first_name,
             last_name,
             middle_name,
@@ -160,11 +199,19 @@ const EditEmployee = () => {
             email,
             address,
             city,
+            department_id,
             employment_status,
+            shift_id,
             job_title,
+            pin,
+            image_url,
+            is_checkedin,
+            session_id,
+            is_active,
           } = data.data.data[0];
           setEmployeeInfo((prev) => ({
             ...prev,
+            id: id,
             firstName: first_name,
             lastName: last_name,
             middleName: middle_name,
@@ -172,19 +219,25 @@ const EditEmployee = () => {
             email: email,
             address: address,
             city: city,
+            departmentId: department_id,
             employementStatus: employment_status,
             jobTitle: job_title,
+            pin: pin,
+            shift: shift_id,
+            confirmPin: pin,
+            isCheckedIn: is_checkedin,
+            sessionId: session_id,
+            isActive: is_active,
+            imageUrl: image_url,
           }));
+          imagePreviewRef.current.src = `${baseUrl()}public/files/images/${image_url}`;
+          setProfilePicutureIsSet(true);
         },
-      },
-      {
-        queryKey: ["LOCATIONS"],
-        queryFn: () => fetchLocations(),
-        onSuccess: (data) => {},
       },
     ],
   });
   useEffect(() => {
+    //check the length of the img tag is > 0
     if (uploadedImageRef.current.files.length) {
       setProfilePicutureIsSet(true);
       const file = uploadedImageRef.current.files[0];
@@ -192,11 +245,19 @@ const EditEmployee = () => {
         imagePreviewRef.current.src = e.target.result;
       };
       reader.readAsDataURL(file);
-    } else {
-      imagePreviewRef.current.src = DefaultPic;
-      setProfilePicutureIsSet(false);
     }
+    //  else {
+    //   imagePreviewRef.current.src = DefaultPic;
+    //   setProfilePicutureIsSet(false);
+    // }
   }, [employeeInfo]);
+
+  //effect to know if user data has been fetched
+  useEffect(() => {
+    if (fetchQueries.every((query) => query.isSuccess === true)) {
+      setLoadedEmployeeData(true);
+    }
+  }, [fetchQueries]);
   return (
     <div className="mx-auto w-[95%] mb-28">
       <div className="flex items-center gap-4 mt-8">
@@ -213,7 +274,12 @@ const EditEmployee = () => {
           </h4>
         </div>
       </div>
-      <form className="mt-6" onSubmit={handleSubmit} ref={employeeInfoForm}>
+      <form
+        className="mt-6"
+        onSubmit={handleSubmit}
+        ref={employeeInfoForm}
+        style={{ display: loadedEmployeeData ? "block" : "none" }}
+      >
         <div className="sm:flex justify-between gap-6">
           {/* personal details  */}
           <div className="w-full max-w-[600px]">
@@ -650,6 +716,15 @@ const EditEmployee = () => {
           </button>
         </div>
       </form>
+      <div className="w-full flex justify-center mt-8">
+        <FadeLoader
+          color="#199432"
+          height={10}
+          width={4}
+          margin={-6}
+          loading={!loadedEmployeeData}
+        />
+      </div>
     </div>
   );
 };

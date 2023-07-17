@@ -7,11 +7,13 @@ const {
   addEmployeeQuery,
   fetchEmployeeQuery,
   deleteEmployeeQuery,
+  editEmployeeQuery,
 } = require("../../queries/employees/index");
 
 const {
   addEmployeeLocationQuery,
 } = require("../../queries/employees_locations/");
+
 const form = formidable({
   multiples: true,
   uploadDir: uploadDir,
@@ -161,6 +163,157 @@ const addEmployee = (req, res) => {
     }
   });
 };
+//edit employee location promise
+const addEmployeeLocationPromiseEdit = (locations, employeeId) => {
+  return new Promise((resolve, reject) => {
+    //handle one location
+    if (typeof locations === "string") {
+      connection.query(
+        addEmployeeLocationQuery(employeeId, locations),
+        (err, results) => {
+          if (err) return reject();
+          resolve(results);
+        }
+      );
+    }
+    //handle multiple locations
+    if (typeof locations === "object") {
+      locations.map((location) => {
+        connection.query(
+          addEmployeeLocationQuery(employeeId, location),
+          (err, results) => {
+            if (err) return reject();
+          }
+        );
+      });
+      return resolve("added");
+    }
+  });
+};
+
+//handle image upload promise
+const imageUploadPromiseEdit = (file, previousImageUrl) => {
+  return new Promise(async (resolve, reject) => {
+    const fileObj = file["image"];
+    if (fileObj.size > 0) {
+      try {
+        // Generate new file name and path
+        const newFileName = `${Date.now()}${fileObj.originalFilename}`;
+        const newFilePath = join(uploadDir, newFileName);
+        // Rename and move the uploaded image file
+        await renameAsync(fileObj.filepath, newFilePath);
+        resolve(newFileName);
+      } catch (err) {
+        reject(err);
+      }
+    } else {
+      // Delete the file if no image was uploaded
+      rm(fileObj.filepath, (err) => {
+        if (err) {
+          reject(err);
+        }
+        resolve(previousImageUrl);
+      });
+    }
+    function renameAsync(oldPath, newPath) {
+      return new Promise((resolve, reject) => {
+        // Rename file asynchronously
+        rename(oldPath, newPath, (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+    }
+  });
+};
+// handle file upload promise
+const fileUploadPromiseEdit = (uploadImage, fields, businessId) => {
+  return new Promise((resolve, reject) => {
+    // Parse the form data and resolve the promise with the fields and image URL
+    const {
+      id,
+      firstName,
+      lastName,
+      middleName,
+      mobile,
+      email,
+      address,
+      city,
+      jobTitle,
+      departmentId,
+      shift,
+      pin,
+      employementStatus,
+      imageIsSet,
+      isCheckedIn,
+      sessionId,
+      locations,
+      isActive,
+    } = fields;
+
+    connection.query(
+      editEmployeeQuery(
+        id,
+        firstName,
+        lastName,
+        middleName,
+        mobile,
+        email,
+        address,
+        city,
+        jobTitle,
+        departmentId,
+        pin,
+        imageIsSet,
+        uploadImage,
+        isCheckedIn,
+        shift,
+        isActive,
+        sessionId,
+        employementStatus,
+        businessId
+      ),
+      (err, fields) => {
+        if (err) {
+          reject(err);
+        }
+        resolve(fields);
+      }
+    );
+  });
+};
+const editEmployee = (req, res) => {
+  const businessId = req.businessId;
+  form.parse(req, async (err, fields, files) => {
+    if (err) {
+      res
+        .status(400)
+        .json({ success: false, message: "success", data: "failure" });
+      return;
+    }
+    console.log(fields);
+    try {
+      const uploadImage = await imageUploadPromiseEdit(files, fields.imageUrl);
+      console.log(uploadImage);
+      // const addEmployeePromise = await fileUploadPromiseEdit(
+      //   uploadImage,
+      //   fields,
+      //   businessId
+      // );
+      // const locationPromise = await addEmployeeLocationPromiseEdit(
+      //   fields.locations,
+      //   addEmployeePromise.insertId
+      // );
+      // res
+      //   .status(201)
+      //   .json({ success: true, message: "success", data: locationPromise });
+    } catch (err) {
+      res
+        .status(400)
+        .json({ success: false, message: "success", data: "failure" });
+    }
+  });
+};
 
 const fetchEmployee = (req, res) => {
   form.parse(req, (err, fields) => {
@@ -187,8 +340,6 @@ const fetchEmployee = (req, res) => {
   });
 };
 
-const editEmployee = (req, res) => {};
-let num = 0;
 const deleteEmployee = (req, res) => {
   form.parse(req, (err, fields) => {
     const { id } = fields;
