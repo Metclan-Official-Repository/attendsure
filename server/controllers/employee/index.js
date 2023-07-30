@@ -3,6 +3,7 @@ const formidable = require("formidable");
 const { join } = require("path");
 const { rename, rm } = require("fs");
 const uploadDir = join(__dirname, "../..", "public", "files", "images");
+const { deleteFile } = require("../../helpers/files/index");
 const {
   addEmployeeQuery,
   fetchEmployeeQuery,
@@ -69,6 +70,7 @@ const fileUploadPromise = (uploadImage, fields, businessId) => {
       departmentId,
       shift,
       pin,
+      managerId,
       employementStatus,
     } = fields;
     const imageIsSet = 0;
@@ -94,6 +96,7 @@ const fileUploadPromise = (uploadImage, fields, businessId) => {
         isActive,
         sessionId,
         employementStatus,
+        managerId,
         businessId
       ),
       (err, fields) => {
@@ -246,6 +249,7 @@ const fileUploadPromiseEdit = (uploadImage, fields, businessId) => {
       employementStatus,
       imageIsSet,
       isCheckedIn,
+      managerId,
       sessionId,
       locations,
       isActive,
@@ -271,6 +275,7 @@ const fileUploadPromiseEdit = (uploadImage, fields, businessId) => {
         isActive,
         sessionId,
         employementStatus,
+        managerId,
         businessId
       ),
       (err, fields) => {
@@ -291,23 +296,24 @@ const editEmployee = (req, res) => {
         .json({ success: false, message: "success", data: "failure" });
       return;
     }
-    console.log(fields);
     try {
       const uploadImage = await imageUploadPromiseEdit(files, fields.imageUrl);
       console.log(uploadImage);
-      // const addEmployeePromise = await fileUploadPromiseEdit(
-      //   uploadImage,
-      //   fields,
-      //   businessId
-      // );
-      // const locationPromise = await addEmployeeLocationPromiseEdit(
-      //   fields.locations,
-      //   addEmployeePromise.insertId
-      // );
-      // res
-      //   .status(201)
-      //   .json({ success: true, message: "success", data: locationPromise });
+      const addEmployeePromise = await fileUploadPromiseEdit(
+        uploadImage,
+        fields,
+        businessId
+      );
+      const locationPromise = await addEmployeeLocationPromiseEdit(
+        fields.locations,
+        addEmployeePromise.insertId
+      );
+      console.log("done");
+      res
+        .status(201)
+        .json({ success: true, message: "success", data: locationPromise });
     } catch (err) {
+      console.log(err);
       res
         .status(400)
         .json({ success: false, message: "success", data: "failure" });

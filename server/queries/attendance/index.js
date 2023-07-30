@@ -1,7 +1,7 @@
-const checkInQuery = (employeeId, checkInTime) => {
+const checkInQuery = (employeeId, checkInTime, businessId) => {
   return `
-        INSERT INTO attendance(employee_id, check_in, check_out)
-        VALUES(${employeeId}, ${checkInTime}, ${null})
+        INSERT INTO attendance(employee_id, check_in, check_out, business_id)
+        VALUES(${employeeId}, ${checkInTime}, ${null}, ${businessId})
     `;
 };
 const setCheckinSession = (employeeId, sessionId) => {

@@ -121,10 +121,11 @@ const registerBusiness = (req, res) => {
                       }
 
                       //adding admin roles
-                      const adminRole = "adminRole";
+                      const adminRole = "Admin";
+                      const isAdmin = 1;
                       const createAt = Date.now() / 1000;
                       connection.query(
-                        addRoleQuery(adminRole, businessId, createAt),
+                        addRoleQuery(adminRole, isAdmin, businessId, createAt),
                         (err, result4) => {
                           if (err) {
                             res.status(401).json({

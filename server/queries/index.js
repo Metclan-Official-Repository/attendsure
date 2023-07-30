@@ -30,6 +30,7 @@ const createEmployeesTable = () => {
     image_url VARCHAR(1000),
     is_checkedin TINYINT,
     shift_id INT,
+    manager_id INT NOT NULL,
     is_active TINYINT,
     session_id INT,
     employment_status VARCHAR(20),
@@ -39,8 +40,9 @@ const createEmployeesTable = () => {
     FOREIGN KEY(business_id)
     REFERENCES businesses(id),
     FOREIGN KEY(shift_id)
-    REFERENCES shifts(id)
-
+    REFERENCES shifts(id), 
+    FOREIGN KEY(manager_id)
+    REFERENCES users(id)
   )
   `;
 };
@@ -52,6 +54,7 @@ const createAttendance = () => {
     check_in INT NOT NULL,
     business_id INT NOT NULL,
     check_out INT,
+    location_id,
     PRIMARY KEY(id),
     FOREIGN KEY(employee_id)
     REFERENCES employees(id) 
@@ -100,6 +103,7 @@ const createPermissionTable = () => {
     CREATE TABLE permissions(
       id INT NOT NULL AUTO_INCREMENT, 
       name VARCHAR(30) NOT NULL,
+      route VARCHAR(20),
       created_at INT NOT NULL,
       PRIMARY KEY(id)
     );
@@ -173,6 +177,7 @@ const employee_locations = () => {
     )
   `;
 };
+const InsertRoles = () => {};
 const createTables = () => {
   return `
     CREATE TABLE businesses(
@@ -196,4 +201,5 @@ const createTables = () => {
     );
   `;
 };
+
 module.exports = createTables;

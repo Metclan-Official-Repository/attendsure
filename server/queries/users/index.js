@@ -34,4 +34,15 @@ const updateUserQuery = (
     WHERE id = ${id}
   `;
 };
-module.exports = { findUserQuery, addUserQuery, updateUserQuery };
+const fetchUsersQuery = (businessId) => {
+  return `
+  SELECT users.email, users.first_name, users.last_name, users.phone, users.id
+  FROM users 
+  WHERE business_id = ${businessId}`;
+};
+module.exports = {
+  findUserQuery,
+  addUserQuery,
+  updateUserQuery,
+  fetchUsersQuery,
+};

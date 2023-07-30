@@ -6,7 +6,7 @@ const joi = require("@hapi/joi");
 const jwt = require("jsonwebtoken");
 const connection = require("../../config/mysql/index");
 //importing queries
-const { findUserQuery } = require("../../queries/users/index");
+const { findUserQuery, fetchUsersQuery } = require("../../queries/users/index");
 const login = (req, res, next) => {
   const form = formidable({
     multiples: true,
@@ -68,4 +68,30 @@ const login = (req, res, next) => {
     });
   });
 };
-module.exports = { login };
+
+const fetchUsers = (req, res, next) => {
+  const businessId = req.businessId;
+  connection.query(fetchUsersQuery(businessId), (err, result) => {
+    if (err) {
+      res.status(400).json({ success: false, message: "failure", data: err });
+      return;
+    }
+    res.status(200).json({ success: true, message: "success", data: result });
+  });
+};
+const addUser = (req, res, next) => {
+  const form = formidable({
+    multiples: true,
+  });
+  form.parse(req, (err, fields) => {
+    if (err) {
+      res.status(404).json({
+        success: false,
+        message: "failure",
+        data: err,
+      });
+    }
+    console.log(fields);
+  });
+};
+module.exports = { login, fetchUsers, addUser };

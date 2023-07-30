@@ -1,7 +1,14 @@
-const addRoleQuery = (name, businessId, createdAt) => {
+const addRoleQuery = (name, isAdmin, businessId, createdAt) => {
   return `
-        INSERT INTO roles(name, business_id, created_at)
-        VALUES('${name}', ${businessId}, ${createdAt})
+        INSERT INTO roles(name, is_admin, business_id, created_at)
+        VALUES('${name}', ${isAdmin}, ${businessId}, ${createdAt})
     `;
 };
-module.exports = { addRoleQuery };
+const fetchRolesQuery = (businessId) => {
+  return `
+    SELECT * 
+    FROM roles 
+    WHERE business_id = ${businessId}
+  `;
+};
+module.exports = { addRoleQuery, fetchRolesQuery };
