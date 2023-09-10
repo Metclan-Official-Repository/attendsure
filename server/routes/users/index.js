@@ -3,6 +3,6 @@ const { login, fetchUsers, addUser } = require("../../controllers/users/index");
 const verifyAuth = require("../../middleware/authentication/");
 router
   .get("/fetch", verifyAuth, fetchUsers)
-  .post("/new", addUser)
+  .post("/new", verifyAuth, addUser)
   .post("/login", login);
 module.exports = router;

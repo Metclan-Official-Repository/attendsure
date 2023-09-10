@@ -1,6 +1,6 @@
 //importing hooks
 import { useState, useRef, useEffect } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 //importing icons
 import { GrFormViewHide, GrFormView } from "react-icons/gr";
@@ -10,11 +10,16 @@ import Logo from "../../assets/logo.png";
 
 //importing services
 import { register } from "../../api/business";
+import { fetchCountries } from "../../api/country";
 
 const Signup = () => {
   const [activeField, setActiveField] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const businessNameRef = useRef();
+  const countryQuery = useQuery({
+    queryKey: ["COUNTRIES"],
+    queryFn: () => fetchCountries(),
+  });
   const [formdata, setFormdata] = useState({
     businessName: "",
     firstName: "",
@@ -22,6 +27,9 @@ const Signup = () => {
     phone: "",
     email: "",
     password: "",
+    city: "",
+    address: "",
+    countryId: "",
   });
   const businessMutation = useMutation({
     mutationFn: () => register(formdata),
@@ -144,6 +152,60 @@ const Signup = () => {
             style={{ borderColor: activeField === "email" && "#21c55d" }}
             required
           />
+        </div>
+        <div className="mx-auto w-full mt-4">
+          <label className="font-medium text-gray-600 text-sm">Address</label>
+          <input
+            name={"address"}
+            type={"text"}
+            placeholder="Business address"
+            className={`w-full border px-4 py-3 rounded-full mt-2 text-sm outline-none transition`}
+            onChange={handleChange}
+            value={formdata.address}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            disabled={businessMutation.isLoading}
+            style={{ borderColor: activeField === "address" && "#21c55d" }}
+            required
+          />
+        </div>
+        <div className="mx-auto w-full mt-4">
+          <label className="font-medium text-gray-600 text-sm">City</label>
+          <input
+            name={"city"}
+            type={"text"}
+            placeholder="City"
+            className={`w-full border px-4 py-3 rounded-full mt-2 text-sm outline-none transition`}
+            onChange={handleChange}
+            value={formdata.city}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            disabled={businessMutation.isLoading}
+            style={{ borderColor: activeField === "city" && "#21c55d" }}
+            required
+          />
+        </div>
+        <div className="mx-auto w-full mt-4">
+          <label className="font-medium text-gray-600 text-sm">Country</label>
+          <select
+            name={"countryId"}
+            className={`w-full border px-4 py-3 rounded-full mt-2 text-sm outline-none transition`}
+            onChange={handleChange}
+            value={formdata.countryId}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            disabled={fetchCountries.isLoading || businessMutation.isLoading}
+            style={{ borderColor: activeField === "countryId" && "#21c55d" }}
+            required
+          >
+            {countryQuery.isSuccess &&
+              countryQuery.data.data.data.map(({ id, nicename, phonecode }) => (
+                <option
+                  key={id}
+                  value={id}
+                >{`${nicename} (${phonecode})`}</option>
+              ))}
+          </select>
         </div>
         <div className="mx-auto w-full mt-4">
           <label className="font-medium text-gray-600 text-sm">

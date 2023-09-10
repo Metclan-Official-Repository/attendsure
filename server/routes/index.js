@@ -8,6 +8,7 @@ const shiftRoutes = require("./shifts/");
 const locationRoutes = require("./locations/index");
 const employeeLocationRoutes = require("./employee_locations");
 const rolesRoutes = require("./roles");
+const countriesRoutes = require("./countries");
 const verifyAuth = require("../middleware/authentication/index");
 
 router.use("/attendance", verifyAuth, attendanceRoutes);
@@ -19,4 +20,5 @@ router.use("/locations", verifyAuth, locationRoutes);
 router.use("/employee-locations", verifyAuth, employeeLocationRoutes);
 router.use("/business", businessRoutes);
 router.use("/user", loginRoutes);
+router.use("/countries", countriesRoutes);
 module.exports = router;

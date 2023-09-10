@@ -17,16 +17,16 @@ const fetchDepartmentsQuery = (id, name, businessId) => {
     `;
   }
 };
-const addDepartmentQuery = (name, businessId) => {
+const addDepartmentQuery = (name, businessId, createdAt, updatedAt) => {
   return `
-    INSERT INTO departments(name, business_id) 
-    VALUES('${name}', ${businessId})
+    INSERT INTO departments(name, created_at, updated_at, business_id) 
+    VALUES('${name}', ${createdAt}, ${updatedAt} ,${businessId})
   `;
 };
-const editDepartmentQuery = (id, name, businessId) => {
+const editDepartmentQuery = (id, name, businessId, updatedAt) => {
   return `
     UPDATE departments 
-        SET name = '${name}'
+        SET name = '${name}', updated_at = ${updatedAt}
         WHERE id = ${Number(id)} AND business_id = ${businessId}
     `;
 };

@@ -44,9 +44,14 @@ const CheckOut = () => {
         checkOutTime: Date.now(),
         userId: userId,
       }),
-    onSuccess: () => {
-      navigate("/");
-      toast.success("Successfully checked out.");
+    onSuccess: (data) => {
+      if (data.data.code === 303) {
+        toast.success("You're already checked out.");
+        navigate("/");
+      } else {
+        navigate("/");
+        toast.success("Successfully checkout in.");
+      }
     },
   });
   useEffect(() => {

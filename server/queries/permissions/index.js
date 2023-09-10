@@ -4,4 +4,13 @@ const addPermissionToRolesQuery = (permissionId, roleId) => {
         VALUES(${permissionId}, ${roleId})
     `;
 };
-module.exports = { addPermissionToRolesQuery };
+const fetchPermissionsQuery = (roleId) => {
+  return `
+  SELECT permissions.name
+  FROM permissions_of_roles
+  INNER JOIN
+  permissions ON permissions_of_roles.permission_id = permissions.id
+  WHERE role_id = ${roleId}
+  `;
+};
+module.exports = { addPermissionToRolesQuery, fetchPermissionsQuery };

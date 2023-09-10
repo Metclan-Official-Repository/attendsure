@@ -5,6 +5,8 @@ import { Outlet, useLocation } from "react-router-dom";
 import { MdOutlineManageAccounts } from "react-icons/md";
 import { LiaKeySolid } from "react-icons/lia";
 import { MdOutlineLocationOn } from "react-icons/md";
+import { FiUsers } from "react-icons/fi";
+import { RiShieldKeyholeLine } from "react-icons/ri";
 import { PiMoneyDuotone } from "react-icons/pi";
 
 const Settings = () => {
@@ -61,6 +63,30 @@ const Settings = () => {
               <a
                 className="font-medium text-gray-700 hover:text-black flex items-center gap-2 border-l-4 px-2 border-transparent"
                 style={{
+                  borderColor: path === "/settings/roles" && "#21c55d",
+                }}
+                href="/settings/roles"
+              >
+                <RiShieldKeyholeLine />
+                <div className="hidden md:block">Roles</div>
+              </a>
+            </li>
+            <li>
+              <a
+                className="font-medium text-gray-700 hover:text-black flex items-center gap-2 border-l-4 px-2 border-transparent"
+                style={{
+                  borderColor: path === "/settings/users" && "#21c55d",
+                }}
+                href="/settings/users"
+              >
+                <FiUsers />
+                <div className="hidden md:block">Users</div>
+              </a>
+            </li>
+            <li>
+              <a
+                className="font-medium text-gray-700 hover:text-black flex items-center gap-2 border-l-4 px-2 border-transparent"
+                style={{
                   borderColor: path === "/settings/billing" && "#21c55d",
                 }}
                 href="/settings/billing"
@@ -71,7 +97,7 @@ const Settings = () => {
             </li>
           </ul>
         </aside>
-        <main className="mt-8 border bg-gray-100 rounded-lg py-6 px-4 flex-1">
+        <main className="mt-8 border bg-gray-100 rounded-lg py-6 px-4 flex-1 mb-16">
           <Outlet />
         </main>
       </div>

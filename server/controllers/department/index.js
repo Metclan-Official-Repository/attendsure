@@ -46,14 +46,19 @@ const addDepartment = (req, res) => {
     }
     const { name } = fields;
     const businessId = req.businessId;
-    connection.query(addDepartmentQuery(name, businessId), (err, fields) => {
-      if (err) {
-        return res
-          .status(401)
-          .json({ success: false, message: "failure", data: err });
+    const createdAt = Date.now() / 1000;
+    const updatedAt = null;
+    connection.query(
+      addDepartmentQuery(name, businessId, createdAt, updatedAt),
+      (err, fields) => {
+        if (err) {
+          return res
+            .status(401)
+            .json({ success: false, message: "failure", data: err });
+        }
+        res.status(201).json({ success: true, message: "success", ...fields });
       }
-      res.status(201).json({ success: true, message: "success", ...fields });
-    });
+    );
   });
 };
 const editDepartment = (req, res, next) => {
@@ -68,8 +73,9 @@ const editDepartment = (req, res, next) => {
     }
     const { id, name } = fields;
     const businessId = req.businessId;
+    const updatedAt = Date.now() / 1000;
     connection.query(
-      editDepartmentQuery(id, name, businessId),
+      editDepartmentQuery(id, name, businessId, updatedAt),
       (err, result) => {
         if (err) {
           return res

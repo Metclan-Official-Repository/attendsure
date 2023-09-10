@@ -6,7 +6,7 @@ const Backdrop = ({ children, display }) => {
     <AnimatePresence>
       {display && (
         <motion.div
-          className="fixed h-screen w-screen bg-black top-0 left-0 z-10"
+          className="fixed h-screen w-screen bg-black top-0 left-0 z-10 overflow-y-auto"
           initial={{ backgroundColor: "rgba(0,0,0,0)" }}
           animate={{ backgroundColor: "rgba(0,0,0,.25)" }}
           transition={{ duration: 0.3 }}

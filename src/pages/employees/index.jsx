@@ -6,8 +6,11 @@ import { FadeLoader } from "react-spinners";
 //importing icons
 import { BiPlusCircle } from "react-icons/bi";
 
+//importing functions
+import { checkRole } from "../../helper";
 //importing services
 import { fetchEmployee } from "../../api/employees";
+
 const Employees = ({ deleteItem }) => {
   const employeesQuery = useQuery({
     queryKey: ["EMPLOYEES"],
@@ -21,13 +24,15 @@ const Employees = ({ deleteItem }) => {
           <h4 className="text-xl font-medium text-gray-600">Employees</h4>
         </div>
         <div className="mt-4">
-          <a
-            href="/employees/new"
-            className="flex items-center gap-2 text-center bg-green-500 px-6 py-2 text-white text-sm rounded-lg hover:bg-green-600 transition"
-          >
-            <BiPlusCircle />
-            <p>Add New</p>
-          </a>
+          {checkRole("employees.create") && (
+            <a
+              href="/employees/new"
+              className="flex items-center gap-2 text-center bg-green-500 px-6 py-2 text-white text-sm rounded-lg hover:bg-green-600 transition"
+            >
+              <BiPlusCircle />
+              <p>Add New</p>
+            </a>
+          )}
         </div>
       </div>
       <div className="w-full flex justify-center mt-8">

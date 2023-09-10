@@ -1,19 +1,23 @@
+const createdAt = Date.now() / 1000;
 const createDepartments = () => {
   return `
-      CREATE TABLE departments (
+      CREATE TABLE IF NOT EXISTS departments (
         id INT NOT NULL AUTO_INCREMENT,
         name VARCHAR(50),
+        created_at INT, 
+        updated_at INT,
         business_id INT NOT NULL,
         PRIMARY KEY(id),
         CONSTRAINT fk_business
         FOREIGN KEY(business_id)
         REFERENCES businesses(id)
+        ON DELETE CASCADE
       )`;
 };
 
 const createEmployeesTable = () => {
   return `
-  CREATE TABLE employees(
+  CREATE TABLE IF NOT EXISTS employees(
     id INT NOT NULL AUTO_INCREMENT,
     first_name VARCHAR(100),
     last_name VARCHAR(100),
@@ -38,7 +42,8 @@ const createEmployeesTable = () => {
     FOREIGN KEY(department_id)
     REFERENCES departments(id), 
     FOREIGN KEY(business_id)
-    REFERENCES businesses(id),
+    REFERENCES businesses(id)
+    ON DELETE CASCADE,
     FOREIGN KEY(shift_id)
     REFERENCES shifts(id), 
     FOREIGN KEY(manager_id)
@@ -48,7 +53,7 @@ const createEmployeesTable = () => {
 };
 const createAttendance = () => {
   return `
-  CREATE TABLE attendance(
+  CREATE TABLE IF NOT EXISTS attendance(
     id INT NOT NULL AUTO_INCREMENT,
     employee_id INT NOT NULL,
     check_in INT NOT NULL,
@@ -60,19 +65,20 @@ const createAttendance = () => {
     REFERENCES employees(id) 
     ON DELETE CASCADE,
     FOREIGN KEY(business_id)
-    REFERENCES businesses(id);
+    REFERENCES businesses(id)
+    ON DELETE CASCADE
   );
   `;
 };
 const insertManager = () => {
   return `
-    INSERT INTO departments(id, name) 
+    INSERT INTO departments (id, name) 
     VALUES(1, 'Administrator'); 
   `;
 };
 const createBusiness = () => {
   return `
-    CREATE TABLE businesses(
+    CREATE TABLE IF NOT EXISTS businesses(
       id INT NOT NULL AUTO_INCREMENT,
       business_name VARCHAR(30) NOT NULL,
       owner INT, 
@@ -82,28 +88,11 @@ const createBusiness = () => {
     )
   `;
 };
-const createUser = () => {
-  return `
-    CREATE TABLE users(
-      id INT NOT NULL AUTO_INCREMENT, 
-      first_name VARCHAR(20) NOT NULL, 
-      last_name VARCHAR(20) NOT NULL,
-      email VARCHAR(100) NOT NULL, 
-      password VARCHAR(255) NOT NULL,
-      business_id INT NOT NULL,
-      PRIMARY KEY(id), 
-      CONSTRAINT fk_business
-      FOREIGN KEY (business_id) 
-      REFERENCES businesses(id)
-    )
-  `;
-};
 const createPermissionTable = () => {
   return `
-    CREATE TABLE permissions(
+    CREATE TABLE IF NOT EXISTS permissions(
       id INT NOT NULL AUTO_INCREMENT, 
       name VARCHAR(30) NOT NULL,
-      route VARCHAR(20),
       created_at INT NOT NULL,
       PRIMARY KEY(id)
     );
@@ -111,32 +100,36 @@ const createPermissionTable = () => {
 };
 const createRoles = () => {
   return `
-  CREATE TABLE roles(
+  CREATE TABLE IF NOT EXISTS roles(
     id INT NOT NULL AUTO_INCREMENT, 
     name VARCHAR(100) NOT NULL, 
+    is_admin TINYINT NOT NULL,
     business_id INT NOT NULL,
-    created_at INT NOT NULL, 
+    created_at INT, 
+    updated_at INT,
     PRIMARY KEY(id),
     FOREIGN KEY(business_id)
     REFERENCES businesses(id)
+    ON DELETE CASCADE
   )
   `;
 };
 const permissions_of_roles = () => {
   return `
-  CREATE TABLE permissions_of_roles(
+  CREATE TABLE IF NOT EXISTS permissions_of_roles(
     permission_id INT NOT NULL, 
     role_id INT NOT NULL, 
     FOREIGN KEY(permission_id) 
-    REFERENCES permissions(id)
-    FOREIGN KEY(roles)
-    REFERENCES roles(id);
-  )
+    REFERENCES permissions(id),
+    FOREIGN KEY(role_id)
+    REFERENCES roles(id)
+    ON DELETE CASCADE
+  );
   `;
 };
 const createShifts = () => {
   return `
-    CREATE TABLE shifts(
+    CREATE TABLE IF NOT EXISTS shifts(
       id INT NOT NULL AUTO_INCREMENT, 
       name VARCHAR(50) NOT NULL, 
       start_time TIME NOT NULL, 
@@ -146,32 +139,41 @@ const createShifts = () => {
       CONSTRAINTS fk_shift
       FOREIGN KEY(business_id) 
       REFERENCES businesses(id)
+      ON DELETE CASCADE
     )
   `;
 };
 const addLocation = () => {
   return `
-        CREATE TABLE business_locations(
+        CREATE TABLE IF NOT EXISTS business_locations(
             id INT NOT NULL AUTO_INCREMENT, 
             name VARCHAR(100) NOT NULL, 
             address VARCHAR(100), 
+            city VARCHAR(50),
+            country_id INT,
             location_unique_name VARCHAR(15) NOT NULL,
             is_active TINYINT NOT NULL,
             business_id INT NOT NULL, 
-            PRIMARY KEY(id), 
+            created_at INT, 
+            updated_at INT,
+            PRIMARY KEY(id),
+            FOREIGN KEY countries(id)
+            REFERENCES countries(id),
             CONSTRAINT fk_locations
             FOREIGN KEY (business_id)
             REFERENCES businesses(id)
+            ON DELETE CASCADE
         )
     `;
 };
 const employee_locations = () => {
   return `
-    CREATE TABLE employee_locations(
+    CREATE TABLE IF NOT EXISTS employee_locations(
       employee_id INT NOT NULL, 
       location_id INT NOT NULL, 
       FOREIGN KEY (employee_id)
-      REFERENCES employees(id),
+      REFERENCES employees(id)
+      ON DELETE CASCADE,
       FOREIGN KEY(location_id)
       REFERENCES business_locations(id)
     )
@@ -180,26 +182,60 @@ const employee_locations = () => {
 const InsertRoles = () => {};
 const createTables = () => {
   return `
-    CREATE TABLE businesses(
+    CREATE TABLE IF NOT EXISTS businesses(
       id INT NOT NULL AUTO_INCREMENT,
       business_name VARCHAR(30) NOT NULL,
       owner_id INT NOT NULL, 
       current_plan VARCHAR(10) NOT NULL,
       created_at INT NOT NULL,
+      updated_at INT,
       PRIMARY KEY (id)
     );
 
-    CREATE TABLE users(
+    CREATE TABLE IF NOT EXISTS users(
       id INT NOT NULL AUTO_INCREMENT, 
       first_name VARCHAR(20) NOT NULL, 
       last_name VARCHAR(20) NOT NULL,
       email VARCHAR(100) NOT NULL, 
       phone VARCHAR(15) NOT NULL,
       password VARCHAR(255) NOT NULL,
+      role_id INT, 
+      is_owner TINYINT NOT NULL,
+      created_at INT,
+      updated_at INT,
       business_id INT,
       PRIMARY KEY(id), 
+      FOREIGN KEY(role_id)
+      REFERENCES roles(id),
+      FOREIGN KEY(business_id)
+      REFERENCES businesses(id)
     );
   `;
 };
 
+const insertPermissions = () => {
+  return `
+    INSERT INTO permissions(name, created_at)
+    VALUES
+    ('employees.view', ${createdAt}), 
+    ('employees.create', ${createdAt}), 
+    ('employees.edit', ${createdAt}), 
+    ('employees.delete', ${createdAt}), 
+    ('departments.view', ${createdAt}), 
+    ('departments.create', ${createdAt}), 
+    ('departments.edit', ${createdAt}), 
+    ('departments.delete', ${createdAt}), 
+    ('shifts.view', ${createdAt}), 
+    ('shifts.create', ${createdAt}), 
+    ('shifts.edit', ${createdAt}), 
+    ('shifts.delete', ${createdAt}), 
+    ('settings.billing', ${createdAt}), 
+    ('settings.locations', ${createdAt}), 
+    ('settings.account', ${createdAt}), 
+    ('settings.roles.view', ${createdAt}), 
+    ('settings.roles.create', ${createdAt}), 
+    ('settings.roles.edit', ${createdAt}), 
+    ('settings.roles.delete', ${createdAt});
+  `;
+};
 module.exports = createTables;

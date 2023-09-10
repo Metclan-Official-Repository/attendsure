@@ -36,9 +36,17 @@ const CheckIn = () => {
         employeeId: userId,
         checkInTime: Date.now(),
       }),
-    onSuccess: () => {
-      navigate("/");
-      toast.success("Successfully checked in.");
+    onSuccess: (data) => {
+      if (data.data.code === 303) {
+        toast.success("You're already checked in.");
+        navigate("/");
+      } else {
+        navigate("/");
+        toast.success("Successfully checked in.");
+      }
+    },
+    onError: () => {
+      console.log("an error occurred");
     },
   });
   const verifyPinQuery = useQuery({

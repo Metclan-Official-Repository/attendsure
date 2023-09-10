@@ -23,6 +23,7 @@ import { fetchLocations } from "../../../api/locations/";
 
 //importing constants
 import { employementStatuses } from "../../../constants";
+import { fetchUsers } from "../../../api/users";
 
 const NewEmployee = () => {
   const navigate = useNavigate();
@@ -47,6 +48,7 @@ const NewEmployee = () => {
     pin: "0000",
     confirmPin: "",
     image: "",
+    managerId: "",
     locations: [],
     validatePin: function () {
       if (this.pin.length < 4) {
@@ -155,6 +157,10 @@ const NewEmployee = () => {
             ],
           }));
         },
+      },
+      {
+        queryKey: ["Users"],
+        queryFn: () => fetchUsers(),
       },
     ],
   });
@@ -571,6 +577,42 @@ const NewEmployee = () => {
             </div>
           </div>
         </div>
+        {/* Human resource's information */}
+        <div className="max-w-[600px]">
+          <h3 className="text-xl text-gray-800 mt-4">Human Resources</h3>
+          <div className="border py-6 px-3 rounded-lg mt-2 shadow">
+            <div className="flex flex-col gap-1 mt-2">
+              <div className="flex items-center">
+                <label className="text-sm">Manager</label>
+                <span className="text-red-600 text-sm">
+                  <CgAsterisk />
+                </span>
+              </div>
+              <select
+                name={"managerId"}
+                value={employeeInfo.managerId}
+                onChange={handleChange}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                style={{
+                  borderColor: activeField === "managerId" && "#21c55d",
+                }}
+                className="outline-none text-sm border py-2 px-2 rounded-sm transition bg-white"
+                disabled={employeeMutation.isLoading}
+                required
+              >
+                {fetchQueries[3].isSuccess &&
+                  fetchQueries[3].data.data.data.map(
+                    ({ first_name, last_name, id }) => (
+                      <option key={id} value={id}>
+                        {first_name} {last_name}
+                      </option>
+                    )
+                  )}
+              </select>
+            </div>
+          </div>
+        </div>
         {/* Location information  */}
         <div className="max-w-[600px]">
           <h3 className="text-xl text-gray-800 mt-4">Work Location</h3>
@@ -581,7 +623,7 @@ const NewEmployee = () => {
                 control: (state) =>
                   state.isFocused ? "border-green-600" : "border-grey-300",
               }}
-              closeMenuOnSelect={false}
+              closeMenuOnSelect={true}
               components={animatedComponents}
               value={employeeInfo.locations}
               onChange={handleSelect}
@@ -598,7 +640,6 @@ const NewEmployee = () => {
                   })
                 )
               }
-              isMulti
               required
             />
           </div>

@@ -1,28 +1,41 @@
 //importing hooks
-import { useState, useContext } from "react";
+import { useState, useEffect } from "react";
+import jwt_decode from "jwt-decode";
 
 //importing icons
 import { TiThMenu } from "react-icons/ti";
 import { GrClose } from "react-icons/gr";
+
+//importing contants
+import { navLinks } from "../../constants";
 
 //importing logo
 import Logo from "../../assets/Logo-no-bg.png";
 
 const Navbar = () => {
   const [active, setActive] = useState(false);
+  const [links, setLinks] = useState([]);
   const auth = localStorage.getItem("_token");
-  const links = [
-    { name: "Dashboard", path: "/" },
-    { name: "Employees", path: "/employees" },
-    { name: "Departments", path: "/departments" },
-    { name: "Shifts", path: "/shifts" },
-    { name: "Attendance", path: "/attendance" },
-    { name: "Settings", path: "/settings" },
-  ];
   const handleLogout = () => {
     localStorage.removeItem("_token");
-    window.location = "/";
+    window.location = "/login";
   };
+  useEffect(() => {
+    if (auth) {
+      const decodedToken = jwt_decode(auth);
+      const roles = decodedToken._roles;
+      if (decodedToken._isAdmin) {
+        setLinks(navLinks);
+      } else {
+        const userLinks = navLinks.filter(({ key }) => {
+          return roles.find(({ name }) => {
+            return name === key;
+          });
+        });
+        setLinks(userLinks);
+      }
+    }
+  }, []);
   return (
     <nav className="bg-gray-100 py-4">
       <div className="flex w-[95%] mx-auto justify-between gap-2 items-center">

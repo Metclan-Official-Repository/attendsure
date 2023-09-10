@@ -14,7 +14,8 @@ const {
 } = require("../../queries/users/index");
 const { addBusinessQuery } = require("../../queries/business/index");
 const { addRoleQuery } = require("../../queries/roles/index");
-
+const { addLocationQuery } = require("../../queries/locations");
+const { addDepartmentQuery } = require("../../queries/department");
 //User input validation schema
 const registerSchema = joi.object({
   businessName: joi.string().min(3).max(20).required(),
@@ -23,9 +24,15 @@ const registerSchema = joi.object({
   phone: joi.string().min(3).required(),
   email: joi.string().min(3).required().email(),
   password: joi.string().min(6).required(),
+  countryId: joi.number().min(1).required(),
+  city: joi.string().min(2).max(50).required(),
+  address: joi.string().min(2).max(100).required(),
 });
 
 const registerBusiness = (req, res) => {
+  //meta data
+  const createdAt = Date.now() / 1000;
+  const updatedAt = Date.now() / 1000;
   const form = formidable({
     multiples: true,
   });
@@ -37,8 +44,17 @@ const registerBusiness = (req, res) => {
       return;
     }
     //ensure this user doesn't exist
-    const { businessName, phone, firstName, lastName, email, password } =
-      fields;
+    const {
+      businessName,
+      phone,
+      firstName,
+      lastName,
+      email,
+      password,
+      address,
+      city,
+      countryId,
+    } = fields;
     connection.query(findUserQuery(email), async (err, fields) => {
       if (err) {
         res.status(401).json({ success: false, message: "failure", data: err });
@@ -48,7 +64,6 @@ const registerBusiness = (req, res) => {
         //encrypt the password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-
         //MYSQL TRANSACTION
         connection.beginTransaction((err) => {
           if (err) {
@@ -59,6 +74,8 @@ const registerBusiness = (req, res) => {
             });
             return;
           }
+          //meta data
+          const isOwner = 1;
           //Adding user
           connection.query(
             addUserQuery(
@@ -67,6 +84,10 @@ const registerBusiness = (req, res) => {
               email,
               phone,
               hashedPassword,
+              null,
+              isOwner,
+              createdAt,
+              null,
               null
             ),
             (err, result1) => {
@@ -83,9 +104,14 @@ const registerBusiness = (req, res) => {
               //adding business
               const ownerId = result1.insertId;
               const currentPlan = "free";
-              const createdAt = Date.now() / 1000;
               connection.query(
-                addBusinessQuery(businessName, ownerId, currentPlan, createdAt),
+                addBusinessQuery(
+                  businessName,
+                  ownerId,
+                  currentPlan,
+                  createdAt,
+                  updatedAt
+                ),
                 (err, results2) => {
                   if (err) {
                     res.status(401).json({
@@ -96,64 +122,118 @@ const registerBusiness = (req, res) => {
                     connection.rollback();
                     return;
                   }
-
-                  //updating user information and business id
                   const businessId = results2.insertId;
+                  //adding admin roles
+                  const adminRole = "Admin";
+                  const isAdmin = 1;
                   connection.query(
-                    updateUserQuery(
-                      firstName,
-                      lastName,
-                      email,
-                      phone,
-                      hashedPassword,
+                    addRoleQuery(
+                      adminRole,
+                      isAdmin,
                       businessId,
-                      ownerId
+                      createdAt,
+                      null
                     ),
-                    (err, results3) => {
+                    (err, result4) => {
                       if (err) {
                         res.status(401).json({
                           success: false,
-                          message: "Error perfoming third transaction",
+                          message: "Error perfoming fourth transaction",
                           data: err,
                         });
                         connection.rollback();
                         return;
                       }
-
-                      //adding admin roles
-                      const adminRole = "Admin";
-                      const isAdmin = 1;
-                      const createAt = Date.now() / 1000;
+                      //updating user information and business id
+                      const roleId = result4.insertId;
                       connection.query(
-                        addRoleQuery(adminRole, isAdmin, businessId, createAt),
-                        (err, result4) => {
+                        updateUserQuery(
+                          ownerId,
+                          firstName,
+                          lastName,
+                          email,
+                          phone,
+                          roleId,
+                          updatedAt,
+                          businessId
+                        ),
+                        (err, results3) => {
                           if (err) {
                             res.status(401).json({
                               success: false,
-                              message: "Error perfoming fourth transaction",
+                              message: "Error perfoming third transaction",
                               data: err,
                             });
                             connection.rollback();
                             return;
                           }
-                          //committing transaction
-                          connection.commit((err) => {
-                            if (err) {
-                              res.status(401).json({
-                                success: false,
-                                message: "Error committing transaction",
-                                data: err,
-                              });
-                              connection.rollback();
-                              return;
+                          //adding the user department
+                          const departmentName = "Sales Reps";
+                          connection.query(
+                            addDepartmentQuery(
+                              departmentName,
+                              businessId,
+                              createdAt,
+                              null
+                            ),
+                            (err, result5) => {
+                              if (err) {
+                                res.status(401).json({
+                                  success: false,
+                                  message: "Error perfoming fifth transaction",
+                                  data: err,
+                                });
+                                connection.rollback();
+                                return;
+                              }
+                              //creating business location
+                              const locationUniqueName = "BL1";
+                              const isActive = 1;
+                              connection.query(
+                                addLocationQuery(
+                                  businessName,
+                                  address,
+                                  city,
+                                  countryId,
+                                  locationUniqueName,
+                                  isActive,
+                                  businessId,
+                                  createdAt,
+                                  null
+                                ),
+                                (err, result6) => {
+                                  if (err) {
+                                    res.status(401).json({
+                                      success: false,
+                                      message:
+                                        "Error perfoming sixth transaction",
+                                      data: err,
+                                    });
+                                    connection.rollback();
+                                    return;
+                                  }
+                                  //committing transaction
+                                  connection.commit((err) => {
+                                    if (err) {
+                                      res.status(401).json({
+                                        success: false,
+                                        message: "Error committing transaction",
+                                        data: err,
+                                      });
+                                      connection.rollback();
+                                      return;
+                                    }
+                                    res.status(201).json({
+                                      success: true,
+                                      message: "Business added successfully",
+                                      data: err,
+                                    });
+                                    return;
+                                  });
+                                }
+                              );
                             }
-                            res.status(201).json({
-                              success: true,
-                              message: "Business added successfully",
-                              data: err,
-                            });
-                            return;
-                          });
+                          );
                         }
                       );
                     }

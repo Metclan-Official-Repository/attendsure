@@ -4,6 +4,9 @@ import { useEffect, useState, useRef } from "react";
 //importing icons
 import { IoEllipsisVertical } from "react-icons/io5";
 
+//importing functions
+import { checkRole } from "../../helper";
+
 const DepartmentCard = ({ name, id, deleteItem }) => {
   const [showOptions, setShowOptions] = useState(false);
   const toggleOptionRef = useRef();
@@ -48,24 +51,33 @@ const DepartmentCard = ({ name, id, deleteItem }) => {
       </div>
       {showOptions && (
         <div className="bg-white absolute top-[50%] flex flex-col w-[70%] rounded-lg shadow border px-3 py-4 right-[5%] z-10">
-          <a
-            href={`/departments/edit?departmentId=${id}`}
-            className="text-sm font-medium text-blue-700  hover:underline"
-          >
-            Edit
-          </a>
-          <div
-            onClick={handleDelete}
-            className="text-sm font-medium text-blue-700 mt-2 hover:underline cursor-pointer"
-          >
-            Delete
-          </div>
-          <a
-            href=""
-            className="text-sm font-medium text-blue-700 mt-2 hover:underline"
-          >
-            Employees
-          </a>
+          {/* Checking role for editing department */}
+          {checkRole("departments.edit") && (
+            <a
+              href={`/departments/edit?departmentId=${id}`}
+              className="text-sm font-medium text-blue-700  hover:underline"
+            >
+              Edit
+            </a>
+          )}
+          {/* Checking role for deleting department */}
+          {checkRole("departments.delete") && (
+            <div
+              onClick={handleDelete}
+              className="text-sm font-medium text-blue-700 mt-2 hover:underline cursor-pointer"
+            >
+              Delete
+            </div>
+          )}
+          {/* Checking role for viewing employees */}
+          {checkRole("employees.view") && (
+            <a
+              href=""
+              className="text-sm font-medium text-blue-700 mt-2 hover:underline"
+            >
+              Employees
+            </a>
+          )}
         </div>
       )}
     </div>

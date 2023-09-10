@@ -10,6 +10,9 @@ import { FadeLoader } from "react-spinners";
 import { BiPlusCircle } from "react-icons/bi";
 import { DepartmentCard } from "../../components";
 
+//importing functions
+import { checkRole } from "../../helper";
+
 const Department = ({ deleteItem }) => {
   const departmentsQuery = useQuery({
     queryKey: ["DEPARTMENTS"],
@@ -23,13 +26,15 @@ const Department = ({ deleteItem }) => {
           <h4 className="text-xl font-medium text-gray-600">Departments</h4>
         </div>
         <div className="mt-4">
-          <a
-            href="/departments/new"
-            className="flex items-center gap-2 text-center bg-green-500 px-6 py-2 text-white text-sm rounded-lg hover:bg-green-600 transition"
-          >
-            <BiPlusCircle />
-            <p>Add New</p>
-          </a>
+          {checkRole("departments.new") && (
+            <a
+              href="/departments/new"
+              className="flex items-center gap-2 text-center bg-green-500 px-6 py-2 text-white text-sm rounded-lg hover:bg-green-600 transition"
+            >
+              <BiPlusCircle />
+              <p>Add New</p>
+            </a>
+          )}
         </div>
       </div>
       <div className="grid xs:grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 justify-items-center gap-2 gap-y-2 mt-4">

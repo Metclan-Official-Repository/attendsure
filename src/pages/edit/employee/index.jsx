@@ -1,6 +1,6 @@
 //importing hooks
 import { useState, useRef, useEffect } from "react";
-import { useMutation, useQueries } from "@tanstack/react-query";
+import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useLocation } from "react-router-dom";
 
 //importing components
@@ -12,9 +12,6 @@ import { FadeLoader } from "react-spinners";
 //importing icons
 import { BiArrowBack } from "react-icons/bi";
 import { CgAsterisk } from "react-icons/cg";
-
-//importing images
-import DefaultPic from "../../../assets/default.png";
 
 //importing services
 import { fetchDepartments } from "../../../api/departments/";
@@ -32,6 +29,7 @@ import { employementStatuses } from "../../../constants";
 const EditEmployee = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const [loadedEmployeeData, setLoadedEmployeeData] = useState(false);
   const search = new URLSearchParams(location.search);
   const id = search.get("employeeId");
@@ -143,7 +141,8 @@ const EditEmployee = () => {
     },
     onSuccess: () => {
       toast.success("Employee updated");
-      // navigate("/employees");
+      queryClient.invalidateQueries("/employees");
+      navigate("/employees");
     },
     onError: () => {
       toast.error("An error occurred");
@@ -673,7 +672,7 @@ const EditEmployee = () => {
                 control: (state) =>
                   state.isFocused ? "border-green-600" : "border-grey-300",
               }}
-              closeMenuOnSelect={false}
+              closeMenuOnSelect={true}
               components={animatedComponents}
               value={employeeInfo.locations}
               onChange={handleSelect}
@@ -690,7 +689,6 @@ const EditEmployee = () => {
                   })
                 )
               }
-              isMulti
               required
             />
           </div>

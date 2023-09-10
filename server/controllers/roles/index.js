@@ -40,7 +40,7 @@ const addRole = (req, res, next) => {
         return;
       }
       connection.query(
-        addRoleQuery(name, isAdmin, Number(businessId), createdAt),
+        addRoleQuery(name, isAdmin, Number(businessId), createdAt, null),
         (err, result) => {
           if (err) {
             res

@@ -1,13 +1,17 @@
 const addLocationQuery = (
   name,
   address,
+  city,
+  country_id,
   locationUniqueName,
   isActive,
-  businessId
+  businessId,
+  createdAt,
+  updatedAt
 ) => {
   return `
-        INSERT INTO business_locations(name, address, location_unique_name, is_active, business_id)
-        VALUES("${name}", "${address}",'${locationUniqueName}', ${isActive},${businessId})
+        INSERT INTO business_locations(name, address, city, country_id, location_unique_name, is_active, created_at, updated_at, business_id)
+        VALUES("${name}", "${address}","${city}", ${country_id}, "${locationUniqueName}", ${isActive},${createdAt}, ${updatedAt}, ${businessId})
     `;
 };
 const fetchLocationsCountQuery = (businessId) => {
@@ -62,10 +66,18 @@ const enableLocationQuery = (id, businessId) => {
   `;
 };
 
-const editLocationQuery = (id, name, address, businessId) => {
+const editLocationQuery = (
+  id,
+  name,
+  address,
+  city,
+  countryId,
+  businessId,
+  updatedAt
+) => {
   return `
     UPDATE business_locations 
-    SET name = "${name}", address = "${address}"
+    SET name = "${name}", address = "${address}", city = "${city}", country_id = "${countryId}", updated_at = ${updatedAt}
     WHERE business_id = ${businessId} AND id = ${id}
   `;
 };

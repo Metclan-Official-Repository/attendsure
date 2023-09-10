@@ -1,7 +1,7 @@
-const addRoleQuery = (name, isAdmin, businessId, createdAt) => {
+const addRoleQuery = (name, isAdmin, businessId, createdAt, updatedAt) => {
   return `
-        INSERT INTO roles(name, is_admin, business_id, created_at)
-        VALUES('${name}', ${isAdmin}, ${businessId}, ${createdAt})
+        INSERT INTO roles(name, is_admin, business_id, created_at, updated_at)
+        VALUES('${name}', ${isAdmin}, ${businessId}, ${createdAt}, ${updatedAt})
     `;
 };
 const fetchRolesQuery = (businessId) => {
@@ -9,6 +9,7 @@ const fetchRolesQuery = (businessId) => {
     SELECT * 
     FROM roles 
     WHERE business_id = ${businessId}
+    ORDER BY name ASC;
   `;
 };
 module.exports = { addRoleQuery, fetchRolesQuery };

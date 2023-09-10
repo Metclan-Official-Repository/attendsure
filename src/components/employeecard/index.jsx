@@ -6,11 +6,10 @@ import DefaultPic from "../../assets/default.png";
 
 //importing functions
 import { baseUrl } from "../../api";
-
+import { checkRole } from "../../helper";
 //import icons
 import { IoLocationSharp } from "react-icons/io5";
 import { AiOutlineEdit, AiOutlineDelete } from "react-icons/ai";
-import { HiOutlineInformationCircle } from "react-icons/hi";
 
 const EmployeeCard = ({
   firstName,
@@ -72,18 +71,32 @@ const EmployeeCard = ({
           </div>
         </div>
         <div className="flex justify-center gap-6 mt-6">
-          <a
-            href={`/employees/edit?employeeId=${id}`}
-            className="p-3 bg-white rounded-full text-gray-600 hover:bg-gray-800 transition hover:text-white"
-          >
-            <AiOutlineEdit className="text-2xl" />
-          </a>
-          <div
-            onClick={handleDelete}
-            className="p-3 bg-white rounded-full text-gray-600 hover:bg-gray-800 transition hover:text-white text-gray-600"
-          >
-            <AiOutlineDelete className="text-2xl  " />
-          </div>
+          {/* Checking role for editing employee*/}
+          {checkRole("employees.edit") ? (
+            <a
+              href={`/employees/edit?employeeId=${id}`}
+              className="p-3 bg-white rounded-full text-gray-600 hover:bg-gray-800 transition hover:text-white"
+            >
+              <AiOutlineEdit className="text-2xl" />
+            </a>
+          ) : (
+            <a className="p-3 bg-white rounded-full text-gray-600 transition text-gray-600 cursor-not-allowed">
+              <AiOutlineEdit className="text-2xl opacity-50" />
+            </a>
+          )}
+          {/* Checking role for deleting employee */}
+          {checkRole("employees.delete") ? (
+            <div
+              onClick={handleDelete}
+              className="p-3 bg-white rounded-full text-gray-600 hover:bg-gray-800 transition hover:text-white text-gray-600"
+            >
+              <AiOutlineDelete className="text-2xl  " />
+            </div>
+          ) : (
+            <div className="p-3 bg-white rounded-full text-gray-600 transition text-gray-600 cursor-not-allowed">
+              <AiOutlineDelete className="text-2xl   opacity-50" />
+            </div>
+          )}
         </div>
       </div>
     </div>
