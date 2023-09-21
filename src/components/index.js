@@ -6,3 +6,4 @@ export { default as ShiftCard } from "./shiftCard";
 export { default as LocationsCard } from "./locationsCards";
 export { default as UserCards } from "./userCards";
 export { default as RoleCard } from "./rolecard";
+export { default as SkeletonLoaderTable } from "./skeletonLoaderTable";

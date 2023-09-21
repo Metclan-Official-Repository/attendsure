@@ -15,7 +15,9 @@ export { default as Security } from "./security";
 export { default as Signup } from "./signup/";
 export { default as Shifts } from "./shifts/";
 export { default as Settings } from "./settings";
+export { default as Summary } from "./summary";
 export { default as Users } from "./users/";
+
 //pages for creating new items
 export { default as NewDepartment } from "./new/department/";
 export { default as NewEmployee } from "./new/employee/";

@@ -32,6 +32,7 @@ function App() {
   const [userRoutes, setUserRoutes] = useState({
     settingsRoutes: [],
     appRoutes: [],
+    reportsRoutes: [],
   });
   const [showDelete, setShowDelete] = useState({
     item: "",
@@ -49,6 +50,7 @@ function App() {
         setUserRoutes({
           settingsRoutes: protectedSettingsRoutes,
           appRoutes: proctedRoutes,
+          reportsRoutes: protectedReportsRoutes,
         });
       } else {
         setUserRoutes((prev) => ({
@@ -61,6 +63,11 @@ function App() {
           appRoutes: proctedRoutes.filter((appRoute) => {
             return roles.find(({ name }) => {
               return name === appRoute.name;
+            });
+          }),
+          reportsRoutes: proctedRoutes.filter((reports) => {
+            return roles.find(({ name }) => {
+              return name === reports.name;
             });
           }),
         }));
@@ -85,7 +92,7 @@ function App() {
               <Route
                 key={route.path}
                 path={route.path}
-                element={route.element}
+                element={<route.element />}
               />
             ))}
           </Route>

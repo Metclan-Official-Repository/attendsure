@@ -1,117 +1,376 @@
-//importing hooks
-import { useQuery } from "@tanstack/react-query";
-
-//importing services
-import { fetchAttendance } from "../../api/attendance/index";
-import { fetchEmployee } from "../../api/employees";
-
-//importing components
-import { FadeLoader } from "react-spinners";
-import RowData from "./rowdata";
+//import libraries, hooks and functions
 import { useState } from "react";
+import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { useQuery, useQueryClient, useQueries } from "@tanstack/react-query";
+
+//importing constant data
+import { attentanceTable } from "../../constants";
+
+//import components
+import { SkeletonLoaderTable } from "../../components";
+import { DatePicker, Stack } from "rsuite";
+
+//import services
+import { reportSummary } from "../../api/reports";
+import { fetchDepartments } from "../../api/departments";
+import { fetchEmployee } from "../../api/employees";
+import { fetchShift } from "../../api/shift";
+import { fetchLocations } from "../../api/locations";
+
+//import icons
+import { PiCaretLeftBold, PiCaretRightBold } from "react-icons/pi";
+
+//table configs
+const columnHelper = createColumnHelper();
 
 const Attendance = () => {
-  const [activeField, setActiveField] = useState(null);
-  const [employee, setEmployee] = useState("");
-  const handleChange = (e) => setEmployee(e.target.value);
-  const handleFocus = (e) => setActiveField(e.target.name);
-  const handleBlur = () => setActiveField(null);
+  const [pageCount, setPageCount] = useState(0);
+  //Filter options renders all the fetched filters on the page
+  const [filterOptions, setFilterOptions] = useState({
+    departmentId: 0,
+    employeeId: 0,
+    shiftId: 0,
+  });
 
-  const attendanceQuery = useQuery({
-    queryKey: ["ATTENDANCE"],
-    queryFn: () => fetchAttendance(),
+  //Filters are sent to the server for query operation
+  const [filters, setFilter] = useState({
+    currentPage: 1,
+    shiftId: 0,
+    employeeId: 0,
+    departmentId: 0,
   });
-  const employeeQuery = useQuery({
-    queryKey: ["EMPLOYEES"],
-    queryFn: () => fetchEmployee(employee),
+
+  const [activeField, setActiveField] = useState(null);
+  const columns = attentanceTable.map((column) =>
+    columnHelper.accessor(`${column.value}`, {
+      cell: (info) => info.getValue(),
+    })
+  );
+  const [data, setData] = useState([]);
+  const queryClient = useQueryClient();
+
+  // fetching options for the filter
+  const filterQuries = useQueries({
+    queries: [
+      // Query for all departments
+      {
+        queryFn: () => fetchDepartments(),
+        queryKey: ["DEPARTMENTS"],
+      },
+      // Query for all employees
+      { queryFn: () => fetchEmployee(), queryKey: ["EMPLOYEES"] },
+      // Query for all shifts
+      { queryFn: () => fetchShift(), queryKey: ["SHIFTS"] },
+      // Query for all locations
+      { queryFn: () => fetchLocations(), queryKey: ["LOCATIONS"] },
+    ],
   });
+  const attendanceSummaryQuery = useQuery({
+    queryKey: ["ATTENDANCE_REPORTS"],
+    queryFn: () => reportSummary.fetch(filters),
+    onSuccess: (data) => {
+      const formattedData = data.data.data.map(
+        ({ employees, check_in, check_out }) => ({
+          FirstName: employees.first_name,
+          LastName: employees.last_name,
+          Department: employees.departments.name,
+          CheckIn: new Date(parseInt(check_in) * 1000).toLocaleString(),
+          CheckOut: new Date(parseInt(check_out) * 1000).toLocaleString(),
+          Shift: employees.shifts.name,
+        })
+      );
+      setPageCount(Math.ceil(data.data.count / 10));
+      setData(formattedData);
+    },
+  });
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
+  //event handlers
+  const handleBlur = () => {};
+  const handleFocus = () => {};
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setFilter((prev) => ({ ...prev, ...filterOptions }));
+    handleRefetch();
+  };
+  const handleChange = (e) => {
+    setFilterOptions((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+  const handleSelect = (e) => {
+    console.log(e.target.value);
+    setFilterOptions((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+  const handleRefetch = async () => {
+    await queryClient.invalidateQueries(["ATTENDANCE_REPORTS"]);
+    await attendanceSummaryQuery.refetch();
+  };
   return (
-    <div className="w-full max-w-[95%] mx-auto">
-      <div className="mt-4">
-        <div className="w-16 h-1 bg-red-400"></div>
-        <h4 className="text-xl font-medium text-gray-600">Attendance</h4>
+    <div>
+      <div className="">
+        <form className="">
+          <div className="flex flex-col md:flex-row md:justify-between gap-4">
+            {/* first row */}
+            <div className="flex flex-col gap-2 sm:flex-row flex-1">
+              {/* Employee name */}
+              <div className="flex flex-col gap-1 mt-2 flex-1">
+                <div className="flex items-center">
+                  <label className="text-sm">Employee's Name</label>
+                </div>
+                <select
+                  name={"employeeId"}
+                  value={filterOptions.employeeId}
+                  onChange={handleChange}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                  onSelect={handleSelect}
+                  style={{
+                    borderColor: activeField === "employeeId" && "#21c55d",
+                  }}
+                  className="outline-none text-sm border py-2 px-2 rounded-sm transition bg-white"
+                  disabled={false}
+                  required
+                >
+                  <option value={0} key={0}>
+                    -- Please select --
+                  </option>
+                  {filterQuries[1].isSuccess &&
+                    filterQuries[1].data.data.data.map(
+                      ({ first_name, last_name, id }) => (
+                        <option value={id} key={id}>
+                          {`${first_name} ${last_name}`}
+                        </option>
+                      )
+                    )}
+                </select>
+              </div>
+              {/* Employee's Department */}
+              <div className="flex flex-col gap-1 mt-2 flex-1">
+                <div className="flex items-center">
+                  <label className="text-sm">Department</label>
+                </div>
+                <select
+                  name={"departmentId"}
+                  value={filterOptions.departmentId}
+                  onChange={handleSelect}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                  onSelect={handleSelect}
+                  style={{
+                    borderColor:
+                      activeField === "employementStatus" && "#21c55d",
+                  }}
+                  className="outline-none text-sm border py-2 px-2 rounded-sm transition bg-white"
+                  disabled={false}
+                  required
+                >
+                  <option value={0} key={0}>
+                    -- Please select --
+                  </option>
+                  {filterQuries[0].isSuccess &&
+                    filterQuries[0].data.data.data.map(({ name, id }) => (
+                      <option value={id} key={id}>
+                        {name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+            </div>
+            {/* Second row */}
+            <div className="flex flex-col gap-2 sm:flex-row flex-1">
+              {/* Shift */}
+              <div className="flex flex-col gap-1 mt-2 flex-1">
+                <div className="flex items-center">
+                  <label className="text-sm">Shift</label>
+                </div>
+                <select
+                  name={"shiftId"}
+                  value={filterOptions.shiftId}
+                  onChange={handleChange}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                  style={{
+                    borderColor: activeField === "shiftId" && "#21c55d",
+                  }}
+                  className="outline-none text-sm border py-2 px-2 rounded-sm transition bg-white"
+                  disabled={false}
+                  required
+                >
+                  <option>-- Please select --</option>
+                  {filterQuries[2].isSuccess &&
+                    filterQuries[2].data.data.data.map(({ name, id }) => (
+                      <option value={id} key={id}>
+                        {name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+              {/* Business Location */}
+              <div className="flex flex-col gap-1 mt-2 flex-1">
+                <div className="flex items-center">
+                  <label className="text-sm">Business Location</label>
+                </div>
+                <select
+                  name={"employementStatus"}
+                  value={""}
+                  onChange={handleChange}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                  style={{
+                    borderColor:
+                      activeField === "employementStatus" && "#21c55d",
+                  }}
+                  className="outline-none text-sm border py-2 px-2 rounded-sm transition bg-white"
+                  disabled={false}
+                  required
+                >
+                  <option>Nkechi Chiamaka</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          {/* Third row  */}
+          <div className="flex flex-col gap-2 sm:flex-row mt-2">
+            {/* Check in*/}
+            <div className="flex flex-col gap-1 mt-2 flex-1">
+              <div className="flex items-center">
+                <label className="text-sm">From</label>
+              </div>
+              <Stack direction="column" alignItems="flex-start" spacing={6}>
+                <DatePicker format="yyyy-MM-dd HH:mm:ss" />
+              </Stack>
+            </div>
+            {/* Checkout */}
+            <div className="flex flex-col gap-1 mt-2 flex-1">
+              <div className="flex items-center">
+                <label className="text-sm">To</label>
+              </div>
+              <Stack direction="column" alignItems="flex-start" spacing={6}>
+                <DatePicker format="yyyy-MM-dd HH:mm:ss" />
+              </Stack>
+            </div>
+          </div>
+          <div className="flex justify-end mt-3">
+            <button
+              type={"submit"}
+              onClick={handleSubmit}
+              className="border py-2 px-6 bg-green-500 text-white rounded-lg transition hover:bg-green-600"
+              style={{
+                cursor: attendanceSummaryQuery.isLoading
+                  ? "not-allowed"
+                  : "pointer",
+              }}
+            >
+              Apply Filter
+            </button>
+          </div>
+        </form>
       </div>
-      <div className="mt-4 mb-2 w-1/2 sm:w-96">
-        <select
-          name={"employee"}
-          value={employee}
-          onChange={(e) => handleChange(e)}
-          onFocus={(e) => handleFocus(e)}
-          onBlur={(e) => handleBlur(e)}
-          style={{
-            borderColor: activeField === "employees" && "#21c55d",
-          }}
-          className="outline-none text-sm border py-2 px-2 rounded-sm transition bg-white w-full"
-          required
-        >
-          {employeeQuery.isSuccess &&
-            employeeQuery.data.data.data.map(
-              ({ first_name, last_name, id }) => (
-                <option key={id} value={id}>
-                  {`${first_name} ${last_name}`}
-                </option>
-              )
-            )}
-        </select>
-      </div>
-      <div className="overflow-x-scroll">
-        <table className="w-full mt-8">
+      <div className="bg-white px-4 py-4 rounded-2xl w-full overflow-x-scroll mt-10">
+        <table className="w-full">
           <thead>
-            <tr className="bg-green-500">
-              <th className="text-white text-sm font-medium py-4 px-4 rounded-tl-lg rounded-bl-lg whitespace-nowrap text-left">
-                Date
-              </th>
-              <th className="text-white text-sm font-medium py-4 px-4 whitespace-nowrap text-left">
-                First Name
-              </th>
-              <th className="text-white text-sm font-medium py-4 px-4 whitespace-nowrap text-left">
-                Last Name
-              </th>
-              <th className="text-white text-sm font-medium py-4 px-4 whitespace-nowrap text-left">
-                Department
-              </th>
-              <th className="text-white text-sm font-medium py-4 px-4 whitespace-nowrap text-left">
-                Check in
-              </th>
-              <th className="text-white text-sm font-medium py-4 px-4 rounded-tr-lg rounded-br-lg whitespace-nowrap text-left">
-                Check out
-              </th>
-            </tr>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <th
+                    key={header.id}
+                    className="text-left py-4 font-poppins font-normal text-sm border-b"
+                  >
+                    <span className="">
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </span>
+                  </th>
+                ))}
+              </tr>
+            ))}
           </thead>
-          <tbody>
-            {attendanceQuery.isSuccess &&
-              attendanceQuery.data.data.data.map(
-                ({
-                  first_name,
-                  last_name,
-                  check_in,
-                  check_out,
-                  name,
-                  employee_id,
-                  id,
-                }) => {
-                  return (
-                    <RowData
-                      firstName={first_name}
-                      lastName={last_name}
-                      checkIn={check_in}
-                      checkOut={check_out}
-                      department={name}
-                      key={id}
-                    />
-                  );
-                }
-              )}
-          </tbody>
+          {attendanceSummaryQuery.isSuccess &&
+            !attendanceSummaryQuery.isFetching && (
+              <tbody>
+                {table.getRowModel().rows.map((row) => (
+                  <tr key={row.id} className="border-b last:border-none">
+                    {row.getVisibleCells().map((cell) => (
+                      <td
+                        key={cell.id}
+                        className="py-4 font-light text-xs font-poppins [&:nth-child(3)>*]:bg-green-100 [&:nth-child(3)>*]:text-green-700 [&:nth-child(4)>*]:bg-red-100 [&:nth-child(4)>*]:text-red-700 [&:nth-child(6)]:text-sm [&:nth-child(5)]:text-sm sm:text-xs"
+                      >
+                        <span className="px-2 py-1 rounded-lg whitespace-nowrap text-[14px]">
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </span>
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            )}
         </table>
-        <div className="w-full flex justify-center mt-8">
-          <FadeLoader
-            color="#199432"
-            height={10}
-            width={4}
-            margin={-6}
-            loading={attendanceQuery.isLoading}
-          />
+        {attendanceSummaryQuery.isLoading ||
+          (attendanceSummaryQuery.isFetching && (
+            <SkeletonLoaderTable numberOfRows={8} />
+          ))}
+      </div>
+      <div className="flex justify-start mt-6 gap-4">
+        <div className="font-sm">
+          <div className="">
+            <div className="font-raleway text-sm font-medium">
+              Page{" "}
+              <div className="border border-black text-xs inline-block px-1 py-[2px] rounded-[5px]">
+                {filters.currentPage}
+              </div>{" "}
+              of {pageCount}
+            </div>
+          </div>
+        </div>
+        <div className="flex gap-4">
+          <div
+            className={`bg-white px-1 py-1 rounded-lg  transition hover:cursor-pointer ${
+              filters.currentPage === 1
+                ? "hover:cursor-not-allowed text-gray-400"
+                : "hover:bg-green-800 hover:text-white"
+            }`}
+            onClick={() => {
+              filters.currentPage > 1 &&
+                setFilter((prev) => ({
+                  ...prev,
+                  currentPage: prev.currentPage--,
+                }));
+              filters.currentPage > handleRefetch();
+            }}
+          >
+            <PiCaretLeftBold className="text-xl" />
+          </div>
+          <div
+            className={`bg-white px-1 py-1 rounded-lg  transition hover:cursor-pointer ${
+              filters.currentPage === pageCount
+                ? "hover:cursor-not-allowed text-gray-400"
+                : "hover:bg-green-800 hover:text-white"
+            }`}
+            onClick={() => {
+              filters.currentPage < pageCount &&
+                setFilter((prev) => ({
+                  ...prev,
+                  currentPage: prev.currentPage++,
+                }));
+              filters.currentPage < handleRefetch();
+            }}
+          >
+            <PiCaretRightBold className="text-xl" />
+          </div>
         </div>
       </div>
     </div>

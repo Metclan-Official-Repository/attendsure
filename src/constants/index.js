@@ -17,8 +17,9 @@ import {
   Roles,
   Reports,
   Shifts,
-  Users,
   Security,
+  Summary,
+  Users,
 } from "../pages";
 
 const employementStatuses = [
@@ -41,7 +42,6 @@ const navLinks = [
   { name: "Employees", path: "/employees", key: "employees.view" },
   { name: "Departments", path: "/departments", key: "departments.view" },
   { name: "Shifts", path: "/shifts", key: "shifts.view" },
-  { name: "Attendance", path: "/attendance", key: "attendance.view" },
   { name: "Reports", path: "/reports", key: "reports.view" },
   { name: "Settings", path: "/settings", key: "settings.view" },
 ];
@@ -51,10 +51,6 @@ const proctedRoutes = [
     path: "/",
     element: Dashboard,
     name: "dashboard.view",
-  },
-  {
-    path: "/attendance",
-    element: Attendance,
   },
   {
     path: "/check-in",
@@ -113,7 +109,12 @@ const proctedRoutes = [
 const protectedReportsRoutes = [
   {
     path: "/reports",
-    element: Reports,
+    element: Attendance,
+    name: "reports.attendance",
+  },
+  {
+    path: "/reports/summary",
+    element: Summary,
     name: "reports.summary",
   },
 ];
@@ -149,10 +150,94 @@ const protectedSettingsRoutes = [
     name: "settings.billing",
   },
 ];
+
+//reports table
+const attentanceTable = [
+  {
+    id: 1,
+    value: "FirstName",
+    name: "First Name",
+  },
+  {
+    id: 2,
+    value: "LastName",
+    name: "Last Name",
+  },
+  {
+    id: 3,
+    value: "CheckIn",
+    name: "Check in date and time",
+  },
+  {
+    id: 4,
+    value: "CheckOut",
+    name: "Check out date and time",
+  },
+  {
+    id: 6,
+    value: "Department",
+    name: "Department",
+  },
+  {
+    id: 7,
+    value: "Shift",
+    name: "Shift",
+  },
+];
+const summaryTableColumns = [
+  {
+    id: 1,
+    value: "FirstName",
+    name: "First Name",
+  },
+  {
+    id: 2,
+    value: "Last Name",
+    name: "Last Name",
+  },
+  {
+    id: 3,
+    value: "ActiveDays",
+    name: "Active Days",
+  },
+  {
+    id: 4,
+    value: "TotalHours",
+    name: "Total Hours Worked",
+  },
+  {
+    id: 5,
+    value: "AbsentDays",
+    name: "Absent Days",
+  },
+  {
+    id: 6,
+    value: "LateArrivals",
+    name: "Late Arrivals",
+  },
+  {
+    id: 7,
+    value: "EarlyDepartures",
+    name: "Early Departures",
+  },
+  {
+    id: 8,
+    value: "EarlyArrivals",
+    name: "Early Arrivals",
+  },
+  {
+    id: 9,
+    value: "Department",
+    name: "Department",
+  },
+];
+
 export {
   employementStatuses,
   navLinks,
   proctedRoutes,
   protectedReportsRoutes,
   protectedSettingsRoutes,
+  summaryTableColumns,
+  attentanceTable,
 };
