@@ -5,6 +5,7 @@ const bcrypt = require("bcrypt");
 
 //importing custom functions
 const connection = require("../../config/mysql/index");
+const businessRegistrationMail = require("../../config/mail/newBusiness/index");
 
 //importing queries
 const {
@@ -20,239 +21,322 @@ const { addDepartmentQuery } = require("../../queries/department");
 const registerSchema = joi.object({
   businessName: joi.string().min(3).max(20).required(),
   firstName: joi.string().min(3).required(),
-  lastName: joi.string().min(3).required(),
-  phone: joi.string().min(3).required(),
+  lastName: joi.string().min(3).allow("").optional(),
+  phone: joi.string().min(2).allow("").optional(),
   email: joi.string().min(3).required().email(),
-  password: joi.string().min(6).required(),
+  password: joi.string().min(5).required(),
   countryId: joi.number().min(1).required(),
-  city: joi.string().min(2).max(50).required(),
-  address: joi.string().min(2).max(100).required(),
+  city: joi.string().min(2).allow("").optional(),
+  address: joi.string().min(0).max(100).allow("").optional(),
 });
+//constants
+const CURRENT_PLAN = 0;
+const CREATED_AT = Date.now() / 1000;
+const ROLE = "ADMIN";
+const IS_ADMIN = 1;
+const IS_OWNER = 1;
+const IS_ACTIVE = 1;
+const DEPARTMENT = "JANITORS";
+const LOCATION_CODE = "L1";
 
-const registerBusiness = (req, res) => {
+//Find users with the provided email
+const findUserPromise = (email) =>
+  new Promise((resolve, reject) => {
+    connection.query(findUserQuery(email), (err, fields) => {
+      if (err) {
+        reject(err.sqlMessage);
+        return;
+      }
+      resolve(fields);
+    });
+  });
+
+//Add user a new user promise
+const addUserPromise = (
+  firstName,
+  lastName,
+  email,
+  phone,
+  password,
+  roleId,
+  isOwner,
+  createdAt,
+  updatedAt,
+  businessId
+) =>
+  new Promise((resolve, reject) => {
+    connection.query(
+      addUserQuery(
+        firstName,
+        lastName,
+        email,
+        phone,
+        password,
+        roleId,
+        isOwner,
+        createdAt,
+        updatedAt,
+        businessId
+      ),
+      (err, fields) => {
+        if (err) {
+          connection.rollback();
+          return reject(err.sqlMessage);
+        }
+        resolve(fields);
+      }
+    );
+  });
+//Add user a new business promise
+const addBusinessPromise = (
+  businessName,
+  ownerId,
+  currentPlan,
+  createdAt,
+  updatedAt
+) =>
+  new Promise((resolve, reject) => {
+    connection.query(
+      addBusinessQuery(
+        businessName,
+        ownerId,
+        currentPlan,
+        createdAt,
+        updatedAt
+      ),
+      (err, fields) => {
+        if (err) {
+          connection.rollback();
+          reject(err.sqlMessage);
+          return;
+        }
+        resolve(fields);
+      }
+    );
+  });
+//Add default admin role
+const addAdminRolePromise = (name, isAdmin, businessId, createdAt, updatedAt) =>
+  new Promise((resolve, reject) => {
+    connection.query(
+      addRoleQuery(name, isAdmin, businessId, createdAt, updatedAt),
+      (err, fields) => {
+        if (err) {
+          connection.rollback();
+          reject(err.sqlMessage);
+          return;
+        }
+        resolve(fields);
+      }
+    );
+  });
+//Update user's role ID and business ID
+const updateUserDataPromise = (
+  id,
+  firstName,
+  lastName,
+  email,
+  phone,
+  roleId,
+  updatedAt,
+  businessId
+) =>
+  new Promise((resolve, reject) => {
+    connection.query(
+      updateUserQuery(
+        id,
+        firstName,
+        lastName,
+        email,
+        phone,
+        roleId,
+        updatedAt,
+        businessId
+      ),
+      (err, fields) => {
+        if (err) {
+          connection.rollback();
+          reject(err.sqlMessage);
+          return;
+        }
+        resolve(fields);
+      }
+    );
+  });
+//Add employee's default department
+const addDepartmentPromise = (name, businessId, createdAt, updatedAt) =>
+  new Promise((resolve, reject) => {
+    connection.query(
+      addDepartmentQuery(name, businessId, createdAt, updatedAt),
+      (err, fields) => {
+        if (err) {
+          connection.rollback();
+          reject(err.sqlMessage);
+          return;
+        }
+        resolve(fields);
+      }
+    );
+  });
+//Add business' default location
+const addLocationPromise = (
+  name,
+  address,
+  city,
+  country_id,
+  locationUniqueName,
+  isActive,
+  businessId,
+  createdAt,
+  updatedAt
+) =>
+  new Promise((resolve, reject) => {
+    connection.query(
+      addLocationQuery(
+        name,
+        address,
+        city,
+        country_id,
+        locationUniqueName,
+        isActive,
+        businessId,
+        createdAt,
+        updatedAt
+      ),
+      (err, fields) => {
+        if (err) {
+          connection.rollback();
+          reject(err.sqlMessage);
+          return;
+        }
+        resolve(fields);
+      }
+    );
+  });
+
+const registerBusiness = async (req, res) => {
   //meta data
-  const createdAt = Date.now() / 1000;
   const updatedAt = Date.now() / 1000;
   const form = formidable({
     multiples: true,
   });
-  form.parse(req, (err, fields) => {
+  form.parse(req, async (err, fields) => {
     //validating user input
-    const { error } = registerSchema.validateAsync(fields);
-    if (error || err) {
-      res.status(401).json({ success: false, message: "failure", data: err });
-      return;
-    }
-    //ensure this user doesn't exist
-    const {
-      businessName,
-      phone,
-      firstName,
-      lastName,
-      email,
-      password,
-      address,
-      city,
-      countryId,
-    } = fields;
-    connection.query(findUserQuery(email), async (err, fields) => {
-      if (err) {
-        res.status(401).json({ success: false, message: "failure", data: err });
-        return;
+    try {
+      const { error } = await registerSchema.validateAsync(fields);
+      if (error || err) {
+        throw new Error(error);
       }
-      if (!fields.length) {
+      const {
+        businessName,
+        phone,
+        firstName,
+        lastName,
+        email,
+        password,
+        address,
+        city,
+        countryId,
+      } = fields;
+      //ensure this user doesn't exist
+      const findUser = await findUserPromise(email);
+      if (!findUser.length) {
         //encrypt the password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-        //MYSQL TRANSACTION
-        connection.beginTransaction((err) => {
-          if (err) {
-            res.status(500).json({
-              success: false,
-              message: "transaction failed",
-              data: err,
-            });
-            return;
-          }
-          //meta data
-          const isOwner = 1;
-          //Adding user
-          connection.query(
-            addUserQuery(
-              firstName,
-              lastName,
-              email,
-              phone,
-              hashedPassword,
-              null,
-              isOwner,
-              createdAt,
-              null,
-              null
-            ),
-            (err, result1) => {
+        const registerBusinessPromise = () =>
+          new Promise((resolve, reject) => {
+            // MYSQL TRANSACTION
+            connection.beginTransaction(async (err) => {
               if (err) {
-                res.status(401).json({
-                  success: false,
-                  message: "Error performing first transaction",
-                  data: err,
-                });
-                connection.rollback();
+                reject(err);
                 return;
               }
-
-              //adding business
-              const ownerId = result1.insertId;
-              const currentPlan = "free";
-              connection.query(
-                addBusinessQuery(
+              //Add user transaction
+              try {
+                const addUser = await addUserPromise(
+                  firstName,
+                  lastName,
+                  email,
+                  phone,
+                  hashedPassword,
+                  null,
+                  IS_OWNER,
+                  CREATED_AT,
+                  null,
+                  null
+                );
+                //Add business transaction
+                const addBusiness = await addBusinessPromise(
                   businessName,
-                  ownerId,
-                  currentPlan,
-                  createdAt,
+                  addUser.insertId,
+                  CURRENT_PLAN,
+                  CREATED_AT,
                   updatedAt
-                ),
-                (err, results2) => {
+                );
+                //Add role transaction
+                const addRole = await addAdminRolePromise(
+                  ROLE,
+                  IS_ADMIN,
+                  addBusiness.insertId,
+                  CREATED_AT,
+                  null
+                );
+                //Update user data transaction
+                await updateUserDataPromise(
+                  addUser.insertId,
+                  firstName,
+                  lastName,
+                  email,
+                  phone,
+                  addRole.insertId,
+                  updatedAt,
+                  addBusiness.insertId
+                );
+                //Add default department
+                await addDepartmentPromise(
+                  DEPARTMENT,
+                  addBusiness.insertId,
+                  CREATED_AT,
+                  null
+                );
+                //Add default location
+                await addLocationPromise(
+                  businessName,
+                  address,
+                  city,
+                  countryId,
+                  LOCATION_CODE,
+                  IS_ACTIVE,
+                  addBusiness.insertId,
+                  CREATED_AT,
+                  null
+                );
+                connection.commit((err) => {
                   if (err) {
-                    res.status(401).json({
-                      success: false,
-                      message: "Error performing second transaction",
-                      data: err,
-                    });
-                    connection.rollback();
-                    return;
+                    throw new Error(err.sqlMessage);
                   }
-                  const businessId = results2.insertId;
-                  //adding admin roles
-                  const adminRole = "Admin";
-                  const isAdmin = 1;
-                  connection.query(
-                    addRoleQuery(
-                      adminRole,
-                      isAdmin,
-                      businessId,
-                      createdAt,
-                      null
-                    ),
-                    (err, result4) => {
-                      if (err) {
-                        res.status(401).json({
-                          success: false,
-                          message: "Error perfoming fourth transaction",
-                          data: err,
-                        });
-                        connection.rollback();
-                        return;
-                      }
-                      //updating user information and business id
-                      const roleId = result4.insertId;
-                      connection.query(
-                        updateUserQuery(
-                          ownerId,
-                          firstName,
-                          lastName,
-                          email,
-                          phone,
-                          roleId,
-                          updatedAt,
-                          businessId
-                        ),
-                        (err, results3) => {
-                          if (err) {
-                            res.status(401).json({
-                              success: false,
-                              message: "Error perfoming third transaction",
-                              data: err,
-                            });
-                            connection.rollback();
-                            return;
-                          }
-                          //adding the user department
-                          const departmentName = "Sales Reps";
-                          connection.query(
-                            addDepartmentQuery(
-                              departmentName,
-                              businessId,
-                              createdAt,
-                              null
-                            ),
-                            (err, result5) => {
-                              if (err) {
-                                res.status(401).json({
-                                  success: false,
-                                  message: "Error perfoming fifth transaction",
-                                  data: err,
-                                });
-                                connection.rollback();
-                                return;
-                              }
-                              //creating business location
-                              const locationUniqueName = "BL1";
-                              const isActive = 1;
-                              connection.query(
-                                addLocationQuery(
-                                  businessName,
-                                  address,
-                                  city,
-                                  countryId,
-                                  locationUniqueName,
-                                  isActive,
-                                  businessId,
-                                  createdAt,
-                                  null
-                                ),
-                                (err, result6) => {
-                                  if (err) {
-                                    res.status(401).json({
-                                      success: false,
-                                      message:
-                                        "Error perfoming sixth transaction",
-                                      data: err,
-                                    });
-                                    connection.rollback();
-                                    return;
-                                  }
-                                  //committing transaction
-                                  connection.commit((err) => {
-                                    if (err) {
-                                      res.status(401).json({
-                                        success: false,
-                                        message: "Error committing transaction",
-                                        data: err,
-                                      });
-                                      connection.rollback();
-                                      return;
-                                    }
-                                    res.status(201).json({
-                                      success: true,
-                                      message: "Business added successfully",
-                                      data: err,
-                                    });
-                                    return;
-                                  });
-                                }
-                              );
-                            }
-                          );
-                        }
-                      );
-                    }
-                  );
-                }
-              );
-            }
-          );
+                });
+                resolve("Business added successfully");
+              } catch (err) {
+                connection.rollback();
+                reject(err);
+              }
+            });
+          });
+        const result = await registerBusinessPromise();
+        res.status(201).json({
+          success: true,
+          message: "Business added successfully",
+          data: result,
         });
+        await businessRegistrationMail(businessName, email);
       } else {
-        res
-          .status(401)
-          .json({ success: false, message: "User already exists", data: err });
+        throw new Error("Email already exists");
       }
-    });
+    } catch (err) {
+      res.status(401).json({ success: false, message: err.message });
+      return;
+    }
   });
-  //encrypt password
-  //return error or success message
 };
-
-const login = () => {};
-module.exports = { login, registerBusiness };
+module.exports = { registerBusiness };

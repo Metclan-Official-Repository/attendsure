@@ -9,6 +9,7 @@ const {
   enableLocationQuery,
   editLocationQuery,
 } = require("../../queries/locations");
+const CREATED_AT = Date.now() / 1000;
 const addLocation = async (req, res, next) => {
   const form = formidable({
     multiples: true,
@@ -19,21 +20,26 @@ const addLocation = async (req, res, next) => {
     return new Promise((resolve, reject) => {
       form.parse(req, (err, fields) => {
         if (err) {
-          reject();
+          reject(err);
+          return;
         }
-        const { name, address } = fields;
+        const { name, address, city, countryId } = fields;
         const isActive = 1;
         connection.query(
           addLocationQuery(
             name,
             address,
+            city,
+            countryId,
             locationUniqueName,
             isActive,
-            businessId
+            businessId,
+            CREATED_AT,
+            null
           ),
           (err, results) => {
             if (err) {
-              reject();
+              reject(err);
               return;
             }
             resolve(results);
@@ -47,7 +53,7 @@ const addLocation = async (req, res, next) => {
     return new Promise((resolve, reject) => {
       connection.query(fetchLocationsCountQuery(businessId), (err, results) => {
         if (err) {
-          reject();
+          reject(err);
           return;
         }
         resolve(results);
@@ -56,7 +62,7 @@ const addLocation = async (req, res, next) => {
   };
   try {
     const uniqueName = await uniqueNameGeneratorPromise();
-    const uniqueNameGenerated = `BL${uniqueName[0]["COUNT(*)"] + 1}`;
+    const uniqueNameGenerated = `L${uniqueName[0]["COUNT(*)"] + 1}`;
     const addedLocation = await addLocationPromise(form, uniqueNameGenerated);
     res.status(201).json({
       success: true,

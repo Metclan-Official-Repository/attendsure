@@ -17,11 +17,12 @@ const addEmployeeQuery = (
   sessionId,
   employmentStatus,
   managerId,
+  locationId,
   businessId
 ) => {
   return `
-     INSERT INTO employees(first_name, last_name, middle_name, mobile, email, address, city, job_title, department_id, pin, image_is_set, image_url, is_checkedin, shift_id, is_active, session_id, employment_status, manager_id, business_id)
-     VALUES("${firstName}", "${lastName}", "${middleName}", "${mobile}", "${email}", "${address}", "${city}", "${jobTitle}", ${departmentId}, "${pin}", ${imageIsSet}, "${imageUrl}",${isCheckedIn}, ${shiftId}, ${isActive}, ${sessionId}, "${employmentStatus}", ${managerId}, ${businessId})
+     INSERT INTO employees(first_name, last_name, middle_name, mobile, email, address, city, job_title, department_id, pin, image_is_set, image_url, is_checkedin, shift_id, is_active, session_id, employment_status, manager_id,location_id, business_id)
+     VALUES("${firstName}", "${lastName}", "${middleName}", "${mobile}", "${email}", "${address}", "${city}", "${jobTitle}", ${departmentId}, "${pin}", ${imageIsSet}, "${imageUrl}",${isCheckedIn}, ${shiftId}, ${isActive}, ${sessionId}, "${employmentStatus}", ${managerId}, ${locationId}, ${businessId})
     `;
 };
 const fetchEmployeeQuery = (id, businessId) => {
@@ -36,6 +37,8 @@ const fetchEmployeeQuery = (id, businessId) => {
     SELECT *
     FROM employees
     WHERE business_id = ${businessId}
+    ORDER BY employees.is_checkedin
+    DESC
     `;
   }
 };

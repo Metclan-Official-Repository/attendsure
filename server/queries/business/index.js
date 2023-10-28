@@ -7,7 +7,14 @@ const addBusinessQuery = (
 ) => {
   return `
         INSERT INTO businesses(business_name, owner_id, current_plan, created_at, updated_at)
-        VALUES('${businessName}', ${ownerId}, '${currentPlan}', ${createdAt}, ${updatedAt});
+        VALUES("${businessName}", ${ownerId}, "${currentPlan}", ${createdAt}, ${updatedAt});
     `;
 };
-module.exports = { addBusinessQuery };
+const fetchBusinessPlan = (businessId) => {
+  return `
+    SELECT businesses.current_plan 
+    FROM businesses 
+    WHERE id = ${parseInt(businessId)};
+  `;
+};
+module.exports = { addBusinessQuery, fetchBusinessPlan };

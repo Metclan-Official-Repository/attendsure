@@ -36,6 +36,7 @@ const createEmployeesTable = () => {
     shift_id INT,
     manager_id INT NOT NULL,
     is_active TINYINT,
+    location_id INT,
     session_id INT,
     employment_status VARCHAR(20),
     PRIMARY KEY(id),
@@ -47,7 +48,9 @@ const createEmployeesTable = () => {
     FOREIGN KEY(shift_id)
     REFERENCES shifts(id), 
     FOREIGN KEY(manager_id)
-    REFERENCES users(id)
+    REFERENCES users(id), 
+    FOREIGN KEY(location_id) 
+    REFERENCES business_locations(id));
   )
   `;
 };
@@ -59,7 +62,8 @@ const createAttendance = () => {
     check_in INT NOT NULL,
     business_id INT NOT NULL,
     check_out INT,
-    location_id,
+    location_id INT,
+    check_in_method VARCHAR(20),
     PRIMARY KEY(id),
     FOREIGN KEY(employee_id)
     REFERENCES employees(id) 
@@ -82,7 +86,7 @@ const createBusiness = () => {
       id INT NOT NULL AUTO_INCREMENT,
       business_name VARCHAR(30) NOT NULL,
       owner INT, 
-      current_plan VARCHAR(10) NOT NULL,
+      current_plan TINYINT NOT NULL,
       created_at INT NOT NULL,
       PRIMARY KEY (id),
     )

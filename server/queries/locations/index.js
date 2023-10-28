@@ -18,10 +18,9 @@ const fetchLocationsCountQuery = (businessId) => {
   return `
     SELECT COUNT(*)
     FROM business_locations 
-    WHERE business_id = ${businessId}
+    WHERE business_id = ${parseInt(businessId)};
   `;
 };
-
 const fetchLocationsQuery = (id, name, address, businessId) => {
   if (id && name && address) {
     return `

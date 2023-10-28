@@ -55,7 +55,7 @@ const imageUploadPromise = (file) => {
   });
 };
 // handle file upload promise
-const fileUploadPromise = (uploadImage, fields, businessId) => {
+const addEmployeePromise = (uploadImage, fields, businessId) => {
   return new Promise((resolve, reject) => {
     // Parse the form data and resolve the promise with the fields and image URL
     const {
@@ -72,6 +72,7 @@ const fileUploadPromise = (uploadImage, fields, businessId) => {
       pin,
       managerId,
       employementStatus,
+      locationId,
     } = fields;
     const imageIsSet = 0;
     const isCheckedIn = 0;
@@ -87,7 +88,7 @@ const fileUploadPromise = (uploadImage, fields, businessId) => {
         address,
         city,
         jobTitle,
-        departmentId,
+        parseInt(departmentId),
         pin,
         imageIsSet,
         uploadImage,
@@ -96,7 +97,8 @@ const fileUploadPromise = (uploadImage, fields, businessId) => {
         isActive,
         sessionId,
         employementStatus,
-        managerId,
+        parseInt(managerId),
+        parseInt(locationId),
         businessId
       ),
       (err, fields) => {
@@ -109,32 +111,32 @@ const fileUploadPromise = (uploadImage, fields, businessId) => {
   });
 };
 //add employee location promise
-const addEmployeeLocationPromise = (locations, employeeId) => {
-  return new Promise((resolve, reject) => {
-    //handle one location
-    if (typeof locations === "string") {
-      connection.query(
-        addEmployeeLocationQuery(employeeId, locations),
-        (err, results) => {
-          if (err) return reject();
-          resolve(results);
-        }
-      );
-    }
-    //handle multiple locations
-    if (typeof locations === "object") {
-      locations.map((location) => {
-        connection.query(
-          addEmployeeLocationQuery(employeeId, location),
-          (err, results) => {
-            if (err) return reject();
-          }
-        );
-      });
-      return resolve("added");
-    }
-  });
-};
+// const addEmployeeLocationPromise = (locations, employeeId) => {
+//   return new Promise((resolve, reject) => {
+//     //handle one location
+//     if (typeof locations === "string") {
+//       connection.query(
+//         addEmployeeLocationQuery(employeeId, locations),
+//         (err, results) => {
+//           if (err) return reject();
+//           resolve(results);
+//         }
+//       );
+//     }
+//     //handle multiple locations
+//     if (typeof locations === "object") {
+//       locations.map((location) => {
+//         connection.query(
+//           addEmployeeLocationQuery(employeeId, location),
+//           (err, results) => {
+//             if (err) return reject();
+//           }
+//         );
+//       });
+//       return resolve("added");
+//     }
+//   });
+// };
 const addEmployee = (req, res) => {
   const businessId = req.businessId;
   form.parse(req, async (err, fields, files) => {
@@ -146,20 +148,16 @@ const addEmployee = (req, res) => {
     }
     try {
       const uploadImage = await imageUploadPromise(files);
-      const addEmployeePromise = await fileUploadPromise(
+      const addEmployee = await addEmployeePromise(
         uploadImage,
         fields,
         businessId
       );
-      const locationPromise = await addEmployeeLocationPromise(
-        fields.locations,
-        addEmployeePromise.insertId
-      );
-      res
-        .status(201)
-        .json({ success: true, message: "success", data: locationPromise });
+      res.status(201).json({
+        success: true,
+        message: "success",
+      });
     } catch (err) {
-      console.log(err);
       res
         .status(400)
         .json({ success: false, message: "success", data: "failure" });
@@ -298,7 +296,6 @@ const editEmployee = (req, res) => {
     }
     try {
       const uploadImage = await imageUploadPromiseEdit(files, fields.imageUrl);
-      console.log(uploadImage);
       const addEmployeePromise = await fileUploadPromiseEdit(
         uploadImage,
         fields,
@@ -308,12 +305,10 @@ const editEmployee = (req, res) => {
         fields.locations,
         addEmployeePromise.insertId
       );
-      console.log("done");
       res
         .status(201)
         .json({ success: true, message: "success", data: locationPromise });
     } catch (err) {
-      console.log(err);
       res
         .status(400)
         .json({ success: false, message: "success", data: "failure" });

@@ -5,6 +5,7 @@ const express = require("express");
 const routes = require("./routes/index");
 const cors = require("cors");
 const app = express();
+
 //middleware
 app.use(cors());
 app.use(routes);

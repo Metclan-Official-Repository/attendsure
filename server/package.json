@@ -16,7 +16,7 @@
     "formidable": "v2",
     "jsonwebtoken": "^9.0.1",
     "mysql": "^2.18.1",
-    "prisma": "^5.3.1"
+    "nodemailer": "^6.9.7"
   },
   "scripts": {
     "dev": "nodemon index.js"

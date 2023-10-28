@@ -7,9 +7,12 @@ const {
   enableLocation,
   disableLocation,
 } = require("../../controllers/locations/index");
+const {
+  hasRemainingBusinessLocationsSlots,
+} = require("../../middleware/plan/index");
 router
   .get("/fetch", fetchLocations)
-  .post("/new", addLocation)
+  .post("/new", hasRemainingBusinessLocationsSlots, addLocation)
   .post("/delete", deleteLocations)
   .put("/edit", editLocation)
   .put("/enable", enableLocation)

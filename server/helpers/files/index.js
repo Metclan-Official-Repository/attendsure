@@ -13,4 +13,5 @@ const deleteFile = async (imageName) => {
   }
   //check if image is present in the file
 };
+
 module.exports = { deleteFile };

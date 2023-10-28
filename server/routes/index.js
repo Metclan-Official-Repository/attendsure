@@ -10,6 +10,8 @@ const employeeLocationRoutes = require("./employee_locations");
 const rolesRoutes = require("./roles");
 const reportsRoutes = require("./reports");
 const countriesRoutes = require("./countries");
+const overviewRoutes = require("./overview");
+const mailRoutes = require("./mail");
 const verifyAuth = require("../middleware/authentication/index");
 
 router.use("/attendance", verifyAuth, attendanceRoutes);
@@ -19,6 +21,8 @@ router.use("/departments", verifyAuth, departmentRoutes);
 router.use("/employees", verifyAuth, employeesRoutes);
 router.use("/employee-locations", verifyAuth, employeeLocationRoutes);
 router.use("/locations", verifyAuth, locationRoutes);
+router.use("/mail", mailRoutes);
+router.use("/overview", verifyAuth, overviewRoutes);
 router.use("/reports", verifyAuth, reportsRoutes);
 router.use("/roles", verifyAuth, rolesRoutes);
 router.use("/shift", verifyAuth, shiftRoutes);

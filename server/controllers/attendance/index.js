@@ -24,7 +24,7 @@ const checkIn = (req, res) => {
       });
     }
     //extract employee and checkin time from fields
-    const { employeeId, checkInTime } = fields;
+    const { employeeId, checkInTime, checkInMethod } = fields;
     const businessId = req.businessId;
     //check if this employee has an existing checkin in this location
     connection.query(
@@ -60,12 +60,14 @@ const checkIn = (req, res) => {
               checkInQuery(
                 Number(employeeId),
                 Number(checkInTime / 1000),
+                results["0"].location_id,
+                checkInMethod,
                 Number(businessId)
               ),
               (err, result) => {
                 if (err) {
                   connection.rollback(() => {
-                    res.status(401).json({
+                    res.status(400).json({
                       success: false,
                       message: "Failure",
                       data: err,
@@ -83,7 +85,7 @@ const checkIn = (req, res) => {
                     () => {
                       if (err) {
                         connection.rollback(() => {
-                          res.status(401).json({
+                          res.status(400).json({
                             success: false,
                             message: "Failure",
                             data: err,
@@ -93,7 +95,7 @@ const checkIn = (req, res) => {
                         connection.commit((err) => {
                           if (err) {
                             connection.rollback(() => {
-                              res.status(500).json({
+                              res.status(400).json({
                                 success: false,
                                 message: "Failure",
                                 data: err,
