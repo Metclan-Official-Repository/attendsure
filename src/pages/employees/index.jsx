@@ -1,4 +1,7 @@
+//import hooks
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+
 //importing components
 import { EmployeeCard } from "../../components";
 import { FadeLoader } from "react-spinners";

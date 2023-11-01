@@ -7,7 +7,7 @@ import { TiThMenu } from "react-icons/ti";
 import { GrClose } from "react-icons/gr";
 
 //importing contants
-import { navLinks } from "../../constants";
+import { navLinks, guestNav } from "../../constants";
 
 //importing logo
 import Logo from "../../assets/Logo-no-bg.png";
@@ -34,20 +34,25 @@ const Navbar = () => {
         });
         setLinks(userLinks);
       }
+    } else {
+      setLinks(guestNav);
     }
-  }, []);
+  }, [auth]);
   return (
-    <nav className="bg-gray-100 py-4">
+    <nav className="py-4 border-b">
       <div className="flex w-[95%] mx-auto justify-between gap-2 items-center">
-        <a className="w-40 shrink-0" href="/">
-          <img src={Logo} alt={"logo"} />
+        <a
+          href="/"
+          className="text-xl sm:text-2xl text-green-600 font-bold transition hover:text-green-600"
+        >
+          Attend<span className="text-black ">Sure</span>
         </a>
-        <ul className=" items-center gap-2 justify-between flex-1 hidden md:flex">
-          <div className="flex items-center flex-1 justify-center">
+        <ul className=" items-center gap-2 justify-center flex-1 hidden md:flex">
+          <div className="flex items-center flex-1 justify-end">
             {links.map((link) => (
               <li className="inline-block" key={link.name}>
                 <a
-                  className="font-semibold text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition"
+                  className="font-semibold text-black hover:text-gray-600 px-4 py-2 rounded-lg transition font-raleway"
                   href={link.path}
                 >
                   {link.name}
@@ -55,7 +60,7 @@ const Navbar = () => {
               </li>
             ))}
           </div>
-          <li className="inline-block font-semibold text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition whitespace-nowrap">
+          <li className="inline-block font-semibold text-white bg-black py-2 rounded-lg transition whitespace-nowrap px-4">
             <button onClick={handleLogout}>
               {auth ? "Log out" : "Sign in"}
             </button>

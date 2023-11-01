@@ -13,7 +13,7 @@ import { attentanceTable } from "../../constants";
 
 //import components
 import { SkeletonLoaderTable } from "../../components";
-import { DatePicker, Stack } from "rsuite";
+import { DatePicker } from "rsuite";
 
 //import services
 import { reportSummary } from "../../api/reports";
@@ -22,6 +22,8 @@ import { fetchEmployee } from "../../api/employees";
 import { fetchShift } from "../../api/shift";
 import { fetchLocations } from "../../api/locations";
 
+//import helper functions
+import { addDays } from "date-fns";
 //import icons
 import { PiCaretLeftBold, PiCaretRightBold } from "react-icons/pi";
 
@@ -35,6 +37,9 @@ const Attendance = () => {
     departmentId: 0,
     employeeId: 0,
     shiftId: 0,
+    locationId: 0,
+    from: addDays(new Date(), -30),
+    to: new Date(),
   });
 
   //Filters are sent to the server for query operation
@@ -43,6 +48,9 @@ const Attendance = () => {
     shiftId: 0,
     employeeId: 0,
     departmentId: 0,
+    locationId: 0,
+    from: addDays(new Date(), -30),
+    to: new Date(),
   });
 
   const [activeField, setActiveField] = useState(null);
@@ -74,14 +82,26 @@ const Attendance = () => {
     queryKey: ["ATTENDANCE_REPORTS"],
     queryFn: () => reportSummary.fetch(filters),
     onSuccess: (data) => {
+      console.log(data.data.data);
       const formattedData = data.data.data.map(
-        ({ employees, check_in, check_out }) => ({
-          FirstName: employees.first_name,
-          LastName: employees.last_name,
-          Department: employees.departments.name,
+        ({
+          check_in,
+          check_out,
+          first_name,
+          last_name,
+          department_name,
+          shift_name,
+          check_in_method,
+        }) => ({
+          FirstName: first_name,
+          LastName: last_name,
+          Department: department_name,
           CheckIn: new Date(parseInt(check_in) * 1000).toLocaleString(),
-          CheckOut: new Date(parseInt(check_out) * 1000).toLocaleString(),
-          Shift: employees.shifts.name,
+          CheckOut: check_out
+            ? new Date(parseInt(check_out) * 1000).toLocaleString()
+            : "Active",
+          Shift: shift_name,
+          CheckInMethod: check_in_method,
         })
       );
       setPageCount(Math.ceil(data.data.count / 10));
@@ -98,14 +118,10 @@ const Attendance = () => {
   const handleFocus = () => {};
   const handleSubmit = (e) => {
     e.preventDefault();
-    setFilter((prev) => ({ ...prev, ...filterOptions }));
+    setFilter((prev) => ({ ...prev, ...filterOptions, currentPage: 1 }));
     handleRefetch();
   };
-  const handleChange = (e) => {
-    setFilterOptions((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
   const handleSelect = (e) => {
-    console.log(e.target.value);
     setFilterOptions((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
   const handleRefetch = async () => {
@@ -127,7 +143,7 @@ const Attendance = () => {
                 <select
                   name={"employeeId"}
                   value={filterOptions.employeeId}
-                  onChange={handleChange}
+                  onChange={handleSelect}
                   onFocus={handleFocus}
                   onBlur={handleBlur}
                   onSelect={handleSelect}
@@ -193,7 +209,7 @@ const Attendance = () => {
                 <select
                   name={"shiftId"}
                   value={filterOptions.shiftId}
-                  onChange={handleChange}
+                  onChange={handleSelect}
                   onFocus={handleFocus}
                   onBlur={handleBlur}
                   style={{
@@ -203,7 +219,9 @@ const Attendance = () => {
                   disabled={false}
                   required
                 >
-                  <option>-- Please select --</option>
+                  <option value={0} id={0} key={0}>
+                    -- Please select --
+                  </option>
                   {filterQuries[2].isSuccess &&
                     filterQuries[2].data.data.data.map(({ name, id }) => (
                       <option value={id} key={id}>
@@ -218,43 +236,58 @@ const Attendance = () => {
                   <label className="text-sm">Business Location</label>
                 </div>
                 <select
-                  name={"employementStatus"}
-                  value={""}
-                  onChange={handleChange}
+                  name={"locationId"}
+                  value={filterOptions.locationId}
+                  onChange={handleSelect}
                   onFocus={handleFocus}
                   onBlur={handleBlur}
                   style={{
-                    borderColor:
-                      activeField === "employementStatus" && "#21c55d",
+                    borderColor: activeField === "locationId" && "#21c55d",
                   }}
                   className="outline-none text-sm border py-2 px-2 rounded-sm transition bg-white"
                   disabled={false}
                   required
                 >
-                  <option>Nkechi Chiamaka</option>
+                  <option>-- Please select --</option>
+                  {filterQuries[3].isSuccess &&
+                    filterQuries[3].data.data.data.map(
+                      ({ name, id, location_unique_name }) => (
+                        <option value={id} key={id}>
+                          {name} {location_unique_name}
+                        </option>
+                      )
+                    )}
                 </select>
               </div>
             </div>
           </div>
           {/* Third row  */}
-          <div className="flex flex-col gap-2 sm:flex-row mt-2">
-            {/* Check in*/}
+          <div className="flex flex-col gap-2 sm:flex-row mt-2 md:w-1/2">
+            {/* From*/}
             <div className="flex flex-col gap-1 mt-2 flex-1">
               <div className="flex items-center">
                 <label className="text-sm">From</label>
               </div>
-              <Stack direction="column" alignItems="flex-start" spacing={6}>
-                <DatePicker format="yyyy-MM-dd HH:mm:ss" />
-              </Stack>
+              <DatePicker
+                format="yyyy-MM-dd HH:mm:ss"
+                value={filterOptions.from}
+                onChange={(date) =>
+                  setFilterOptions((prev) => ({ ...prev, from: date }))
+                }
+              />
             </div>
-            {/* Checkout */}
+            {/* Tos= */}
             <div className="flex flex-col gap-1 mt-2 flex-1">
               <div className="flex items-center">
                 <label className="text-sm">To</label>
               </div>
-              <Stack direction="column" alignItems="flex-start" spacing={6}>
-                <DatePicker format="yyyy-MM-dd HH:mm:ss" />
-              </Stack>
+              <DatePicker
+                format="yyyy-MM-dd HH:mm:ss"
+                value={filterOptions.to}
+                onChange={(date) =>
+                  setFilterOptions((prev) => ({ ...prev, to: date }))
+                }
+              />
             </div>
           </div>
           <div className="flex justify-end mt-3">
@@ -281,7 +314,7 @@ const Attendance = () => {
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
-                    className="text-left py-4 font-poppins font-normal text-sm border-b"
+                    className="text-left py-4 font-poppins font-semibold text-sm border-b"
                   >
                     <span className="">
                       {header.isPlaceholder
@@ -304,7 +337,7 @@ const Attendance = () => {
                     {row.getVisibleCells().map((cell) => (
                       <td
                         key={cell.id}
-                        className="py-4 font-light text-xs font-poppins [&:nth-child(3)>*]:bg-green-100 [&:nth-child(3)>*]:text-green-700 [&:nth-child(4)>*]:bg-red-100 [&:nth-child(4)>*]:text-red-700 [&:nth-child(6)]:text-sm [&:nth-child(5)]:text-sm sm:text-xs"
+                        className="py-4 font-normal text-xs font-poppins [&:nth-child(6)]:text-sm [&:nth-child(5)]:text-sm sm:text-xs"
                       >
                         <span className="px-2 py-1 rounded-lg whitespace-nowrap text-[14px]">
                           {flexRender(
@@ -349,7 +382,7 @@ const Attendance = () => {
                   ...prev,
                   currentPage: prev.currentPage--,
                 }));
-              filters.currentPage > handleRefetch();
+              filters.currentPage > 1 && handleRefetch();
             }}
           >
             <PiCaretLeftBold className="text-xl" />
@@ -366,7 +399,7 @@ const Attendance = () => {
                   ...prev,
                   currentPage: prev.currentPage++,
                 }));
-              filters.currentPage < handleRefetch();
+              filters.currentPage < pageCount && handleRefetch();
             }}
           >
             <PiCaretRightBold className="text-xl" />

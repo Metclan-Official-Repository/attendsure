@@ -1,14 +1,14 @@
 import axios from "axios";
-const register = (data) => {
-  const response = axios({
+const register = async (data) => {
+  const response = await axios({
     url: "business/register",
     method: "post",
     data: data,
   });
   return response;
 };
-const login = (data) => {
-  const response = axios({
+const login = async (data) => {
+  const response = await axios({
     url: "user/login",
     method: "post",
     data: data,

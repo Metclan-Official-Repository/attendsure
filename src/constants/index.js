@@ -4,16 +4,19 @@ import {
   Billing,
   CheckIn,
   CheckOut,
+  Contact,
   Departments,
   Dashboard,
   EditDepartment,
   EditEmployee,
   EditShift,
   Employees,
+  Home,
   Locations,
   NewDepartment,
   NewEmployee,
   NewShift,
+  Pricing,
   Roles,
   Reports,
   Shifts,
@@ -45,7 +48,29 @@ const navLinks = [
   { name: "Reports", path: "/reports", key: "reports.view" },
   { name: "Settings", path: "/settings", key: "settings.view" },
 ];
-
+const guestNav = [
+  {
+    name: "Feedback",
+    path: "https://attendsure.featurebase.app/",
+    key: "feedback",
+  },
+  { name: "Pricing", path: "/pricing", key: "pricing.view" },
+  { name: "Get in touch", path: "/contact", key: "contact" },
+];
+const guestRoutes = [
+  {
+    path: "/",
+    element: Home,
+  },
+  {
+    path: "/pricing",
+    element: Pricing,
+  },
+  {
+    path: "/contact",
+    element: Contact,
+  },
+];
 const proctedRoutes = [
   {
     path: "/",
@@ -104,6 +129,11 @@ const proctedRoutes = [
     path: "/shifts",
     element: Shifts,
     name: "shifts.view",
+  },
+  {
+    path: "/contact",
+    element: Contact,
+    name: "contact",
   },
 ];
 const protectedReportsRoutes = [
@@ -183,6 +213,11 @@ const attentanceTable = [
     value: "Shift",
     name: "Shift",
   },
+  {
+    id: 8,
+    value: "CheckInMethod",
+    name: "CheckInMethod",
+  },
 ];
 const summaryTableColumns = [
   {
@@ -240,4 +275,6 @@ export {
   protectedSettingsRoutes,
   summaryTableColumns,
   attentanceTable,
+  guestRoutes,
+  guestNav,
 };

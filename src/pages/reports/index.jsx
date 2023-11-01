@@ -30,7 +30,7 @@ const Reports = () => {
                 <div className="hidden md:block">Attendance</div>
               </a>
             </li>
-            <li className="">
+            {/* <li className="">
               <a
                 href="/reports/summary"
                 className="font-medium text-gray-700 hover:text-black flex items-center gap-2 border-l-4 px-2 border-transparent"
@@ -41,7 +41,7 @@ const Reports = () => {
                 <GrAnalytics />
                 <div className="hidden md:block">Summary</div>
               </a>
-            </li>
+            </li> */}
           </ul>
         </aside>
         <main className="mt-8 border bg-gray-100 rounded-lg py-6 px-4 flex-1 mb-16 overflow-x-scroll scroll-smooth">

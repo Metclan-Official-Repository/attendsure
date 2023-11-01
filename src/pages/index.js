@@ -3,11 +3,14 @@ export { default as Attendance } from "./attendance/";
 export { default as Billing } from "./billing";
 export { default as CheckIn } from "./checkin/";
 export { default as CheckOut } from "./checkout/";
+export { default as Contact } from "./contact";
 export { default as Departments } from "./departments/";
 export { default as Dashboard } from "./dashboard/";
 export { default as Employees } from "./employees/";
+export { default as Home } from "./home";
 export { default as Locations } from "./locations";
 export { default as Login } from "./login/";
+export { default as Pricing } from "./pricing";
 export { default as ProtectedRoute } from "./protectedroutes/";
 export { default as Roles } from "./roles";
 export { default as Reports } from "./reports";
@@ -16,6 +19,7 @@ export { default as Signup } from "./signup/";
 export { default as Shifts } from "./shifts/";
 export { default as Settings } from "./settings";
 export { default as Summary } from "./summary";
+export { default as Upgrade } from "./upgrade";
 export { default as Users } from "./users/";
 
 //pages for creating new items

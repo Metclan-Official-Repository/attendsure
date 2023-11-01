@@ -60,8 +60,13 @@ const Login = () => {
         className="w-full flex flex-col mt-18 px-8 py-16 border rounded-lg"
         onSubmit={handleSubmit}
       >
-        <div className="">
-          <img src={Logo} className="w-48 mx-auto" />
+        <div className="text-center">
+          <a
+            href="/"
+            className="text-xl sm:text-3xl text-green-600 font-bold text-center hover:text-green-600 transition"
+          >
+            Attend<span className="text-black">Sure</span>
+          </a>
         </div>
         <div
           style={{ visibility: loginError ? "visible" : "hidden" }}

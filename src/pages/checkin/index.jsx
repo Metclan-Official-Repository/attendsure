@@ -35,6 +35,7 @@ const CheckIn = () => {
       checkIn({
         employeeId: userId,
         checkInTime: Date.now(),
+        checkInMethod: "PIN",
       }),
     onSuccess: (data) => {
       if (data.data.code === 303) {
@@ -85,8 +86,13 @@ const CheckIn = () => {
       </div>
       {verifyPinQuery.isSuccess && (
         <div>
-          <div className="mt-14">
-            <img src={Logo} className="w-48 mx-auto" />
+          <div className="mt-14 text-center">
+            <a
+              href="/"
+              className="text-xl sm:text-2xl text-green-600 font-bold transition hover:text-green-600"
+            >
+              Attend<span className="text-black ">Sure</span>
+            </a>
           </div>
           <div className="py-4">
             <div className="font-poppins text-sm text-gray-500 font-normal text-center">

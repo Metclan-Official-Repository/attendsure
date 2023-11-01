@@ -140,7 +140,7 @@ const createShifts = () => {
       end_time TIME NOT NULL, 
       business_id INT NOT NULL, 
       PRIMARY KEY(id), 
-      CONSTRAINTS fk_shift
+      CONSTRAINT fk_shift
       FOREIGN KEY(business_id) 
       REFERENCES businesses(id)
       ON DELETE CASCADE

@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 //importing components
 import { AttendanceCard } from "../../components";
 import { FadeLoader } from "react-spinners";
+import { OverviewCards } from "../../components";
 
 //importing services
 import { fetchEmployee } from "../../api/employees";
@@ -18,6 +19,7 @@ const Dashboard = () => {
         <div className="w-16 h-1 bg-blue-400"></div>
         <h4 className="text-xl font-medium text-gray-600">Dashboard</h4>
       </div>
+      <OverviewCards />
       <div className="w-full flex justify-center mt-8">
         <FadeLoader
           color="#199432"

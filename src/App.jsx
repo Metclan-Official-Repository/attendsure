@@ -9,6 +9,7 @@ import {
   proctedRoutes,
   protectedSettingsRoutes,
   protectedReportsRoutes,
+  guestRoutes,
 } from "./constants";
 //import components
 import { ToastContainer } from "react-toastify";
@@ -29,10 +30,12 @@ import {
 import "./App.css";
 
 function App() {
+  const auth = localStorage.getItem("_token");
   const [userRoutes, setUserRoutes] = useState({
     settingsRoutes: [],
     appRoutes: [],
     reportsRoutes: [],
+    guestRoutes: [],
   });
   const [showDelete, setShowDelete] = useState({
     item: "",
@@ -41,17 +44,17 @@ function App() {
     id: "",
   });
   useEffect(() => {
-    const auth = localStorage.getItem("_token");
-
+    //show these routes if authenticated
     if (auth) {
       const decodedToken = jwt_decode(auth);
       const roles = decodedToken._roles;
       if (decodedToken._isAdmin) {
-        setUserRoutes({
+        setUserRoutes((prev) => ({
+          ...prev,
           settingsRoutes: protectedSettingsRoutes,
           appRoutes: proctedRoutes,
           reportsRoutes: protectedReportsRoutes,
-        });
+        }));
       } else {
         setUserRoutes((prev) => ({
           ...prev,
@@ -72,11 +75,30 @@ function App() {
           }),
         }));
       }
+    } else {
+      setUserRoutes((prev) => ({ ...prev, guestRoutes: guestRoutes }));
     }
   }, []);
   return (
     <>
       <Navbar />
+      {/* Render routes if authenticated */}
+      {!auth && (
+        <Routes>
+          {userRoutes.guestRoutes.map((route) => (
+            <Route
+              path={route.path}
+              key={route.path}
+              element={<route.element />}
+            />
+          ))}
+        </Routes>
+      )}
+      <Routes>
+        {userRoutes.guestRoutes.map((route) => (
+          <Route key={route.path} element={<route.element />} />
+        ))}
+      </Routes>
       <Routes>
         <Route element={<ProtectedRoute />}>
           {userRoutes.appRoutes.map((route) => (
@@ -113,7 +135,7 @@ function App() {
         </Route>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="*" element={<Dashboard />} />
+        {/* <Route path="*" element={<Dashboard />} /> */}
       </Routes>
       <ToastContainer />
       {showDelete.enabled && (

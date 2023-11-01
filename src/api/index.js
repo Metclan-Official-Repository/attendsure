@@ -2,10 +2,12 @@ import axios from "axios";
 
 const baseUrl = () => {
   if (import.meta.env.DEV) {
-    return import.meta.env.VITE_BASE_URL_DEV;
+    return "https://api.quartexhq.xyz/";
+    // return import.meta.env.VITE_BASE_URL_DEV;
   }
   if (import.meta.env.PROD) {
-    return import.meta.env.VITE_BASE_URL_PROD;
+    // return import.meta.env.VITE_BASE_URL_PROD;
+    return "https://api.quartexhq.xyz/";
   }
 };
 
@@ -38,6 +40,7 @@ axios.interceptors.response.use(
       if (err.response.status === 403) {
         localStorage.removeItem("_token");
       }
+      return Promise.reject(err);
     }
   }
 );

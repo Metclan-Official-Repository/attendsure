@@ -5,8 +5,9 @@ import { useNavigate } from "react-router-dom";
 
 //importing components
 import { toast } from "react-toastify";
-import makeAnimated from "react-select/animated";
-import Select from "react-select";
+import Backdrop from "../../../components/backdrop";
+import Toggle from "react-toggle";
+import Upgrade from "../../upgrade";
 
 //importing icons
 import { BiArrowBack } from "react-icons/bi";
@@ -30,9 +31,10 @@ const NewEmployee = () => {
   const uploadedImageRef = useRef();
   const imagePreviewRef = useRef();
   const employeeInfoForm = useRef();
-  const animatedComponents = makeAnimated();
   const reader = new FileReader();
   const [profilePicutureIsSet, setProfilePicutureIsSet] = useState(false);
+  const [showBackdrop, setShowBackdrop] = useState(false);
+  const [upgradeMessage, setUpgradeMessage] = useState("");
   const [employeeInfo, setEmployeeInfo] = useState({
     firstName: "",
     lastName: "",
@@ -49,7 +51,7 @@ const NewEmployee = () => {
     confirmPin: "",
     image: "",
     managerId: "",
-    locations: [],
+    locationId: 1,
     validatePin: function () {
       if (this.pin.length < 4) {
         toast.error("Pin code must be 4 digits");
@@ -127,8 +129,13 @@ const NewEmployee = () => {
       toast.success("Employee added");
       navigate("/employees");
     },
-    onError: () => {
-      toast.error("An error occurred");
+    onError: (err) => {
+      if (err.response.status === 402) {
+        setUpgradeMessage(err.response.data.message);
+        setShowBackdrop(true);
+      } else {
+        toast.error("An error occurred");
+      }
     },
   });
 
@@ -316,6 +323,36 @@ const NewEmployee = () => {
               >
                 Reset pin
               </button>
+            </div>
+            <div className="py-6 rounded-lg mt-2 flex justify-between gap-3">
+              <div className="bg-gray-100 flex justify-between py-8 px-4 rounded-lg border shadow flex-1">
+                <div className="">
+                  <Toggle
+                    // onChange={handleToggle}
+                    disabled={true}
+                    checked={false}
+                    // disabled={isLoading}
+                  />
+                  <h4>Fingerprint Check-in</h4>
+                </div>
+                <p className="bg-white text-[15px] text-green-500 h-min w-min p-1 font-semibold rounded-lg italic">
+                  Pro
+                </p>
+              </div>
+              <div className="bg-gray-100 flex justify-between py-8 px-4 rounded-lg border shadow flex-1">
+                <div className="">
+                  <Toggle
+                    // onChange={handleToggle}
+                    disabled={true}
+                    checked={false}
+                    // disabled={isLoading}
+                  />
+                  <h4>QR Code Check-in</h4>
+                </div>
+                <p className="bg-white text-[15px] text-green-500 h-min w-min p-1 font-semibold rounded-lg italic">
+                  Pro
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -617,31 +654,28 @@ const NewEmployee = () => {
         <div className="max-w-[600px]">
           <h3 className="text-xl text-gray-800 mt-4">Work Location</h3>
           <div className="border py-6 px-3 rounded-lg mt-2 shadow">
-            <Select
-              name={"locations"}
-              classNames={{
-                control: (state) =>
-                  state.isFocused ? "border-green-600" : "border-grey-300",
+            <select
+              name={"locationId"}
+              value={employeeInfo.locationId}
+              onChange={handleChange}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              style={{
+                borderColor: activeField === "locationId" && "#21c55d",
               }}
-              closeMenuOnSelect={true}
-              components={animatedComponents}
-              value={employeeInfo.locations}
-              onChange={handleSelect}
-              isLoading={
-                fetchQueries[2].isLoading || employeeMutation.isLoading
-              }
-              disabled={fetchQueries[2].isLoading || employeeMutation.isLoading}
-              options={
-                fetchQueries[2].isSuccess &&
-                fetchQueries[2].data.data.data.map(
-                  ({ name, id, location_unique_name }) => ({
-                    value: id,
-                    label: `${name}(${location_unique_name})`,
-                  })
-                )
-              }
+              className="outline-none text-sm border py-2 px-2 rounded-sm transition bg-white w-full"
+              disabled={employeeMutation.isLoading}
               required
-            />
+            >
+              {fetchQueries[2].isSuccess &&
+                fetchQueries[2].data.data.data.map(
+                  ({ name, location_unique_name, id }) => (
+                    <option key={id} value={id}>
+                      {name} {location_unique_name}
+                    </option>
+                  )
+                )}
+            </select>
           </div>
         </div>
         <div className="flex justify-between w-full max-w-[600px] mt-8">
@@ -665,6 +699,15 @@ const NewEmployee = () => {
           </button>
         </div>
       </form>
+      <Backdrop
+        children={
+          <Upgrade
+            onClick={() => setShowBackdrop(false)}
+            message={upgradeMessage}
+          />
+        }
+        display={showBackdrop}
+      />
     </div>
   );
 };
