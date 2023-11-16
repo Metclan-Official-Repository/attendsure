@@ -52,6 +52,8 @@ const NewEmployee = () => {
     image: "",
     managerId: "",
     locationId: 1,
+    fingerPrintEnabled: 0,
+    qrCodeEnabled: 0,
     validatePin: function () {
       if (this.pin.length < 4) {
         toast.error("Pin code must be 4 digits");
@@ -124,7 +126,12 @@ const NewEmployee = () => {
   };
   //employees mutation
   const employeeMutation = useMutation({
-    mutationFn: () => addEmployee(new FormData(employeeInfoForm.current)),
+    mutationFn: () => {
+      const formData = new FormData(employeeInfoForm.current);
+      formData.append("fingerPrintEnabled", employeeInfo.fingerPrintEnabled);
+      formData.append("qrCodeEnabled", employeeInfo.qrCodeEnabled);
+      return addEmployee(formData);
+    },
     onSuccess: () => {
       toast.success("Employee added");
       navigate("/employees");
@@ -328,30 +335,40 @@ const NewEmployee = () => {
               <div className="bg-gray-100 flex justify-between py-8 px-4 rounded-lg border shadow flex-1">
                 <div className="">
                   <Toggle
-                    // onChange={handleToggle}
-                    disabled={true}
-                    checked={false}
-                    // disabled={isLoading}
+                    onChange={() =>
+                      setEmployeeInfo((prev) => ({
+                        ...prev,
+                        fingerPrintEnabled: prev.fingerPrintEnabled ? 0 : 1,
+                      }))
+                    }
+                    value={employeeInfo.fingerPrintEnabled}
+                    disabled={employeeMutation.isLoading}
+                    checked={employeeInfo.fingerPrintEnabled ? true : false}
                   />
                   <h4>Fingerprint Check-in</h4>
                 </div>
-                <p className="bg-white text-[15px] text-green-500 h-min w-min p-1 font-semibold rounded-lg italic">
+                {/* <p className="bg-white text-[15px] text-green-500 h-min w-min p-1 font-semibold rounded-lg italic">
                   Pro
-                </p>
+                </p> */}
               </div>
               <div className="bg-gray-100 flex justify-between py-8 px-4 rounded-lg border shadow flex-1">
                 <div className="">
                   <Toggle
-                    // onChange={handleToggle}
-                    disabled={true}
-                    checked={false}
-                    // disabled={isLoading}
+                    value={employeeInfo.qrCodeEnabled}
+                    onChange={() =>
+                      setEmployeeInfo((prev) => ({
+                        ...prev,
+                        qrCodeEnabled: prev.qrCodeEnabled ? 0 : 1,
+                      }))
+                    }
+                    disabled={employeeMutation.isLoading}
+                    checked={employeeInfo.qrCodeEnabled ? true : false}
                   />
                   <h4>QR Code Check-in</h4>
                 </div>
-                <p className="bg-white text-[15px] text-green-500 h-min w-min p-1 font-semibold rounded-lg italic">
+                {/* <p className="bg-white text-[15px] text-green-500 h-min w-min p-1 font-semibold rounded-lg italic">
                   Pro
-                </p>
+                </p> */}
               </div>
             </div>
           </div>

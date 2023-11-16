@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import makeAnimated from "react-select/animated";
 import Select from "react-select";
 import { FadeLoader } from "react-spinners";
+import Toggle from "react-toggle";
 
 //importing icons
 import { BiArrowBack } from "react-icons/bi";
@@ -54,6 +55,8 @@ const EditEmployee = () => {
     pin: "0000",
     confirmPin: "",
     image: "",
+    qrCodeEnabled: 0,
+    fingerPrintEnabled: 0,
     locations: [],
     validatePin: function () {
       if (this.pin.length < 4) {
@@ -401,6 +404,47 @@ const EditEmployee = () => {
               >
                 Reset pin
               </button>
+            </div>
+            {/* Fingerprint here */}
+            <div className="py-6 rounded-lg mt-2 flex justify-between gap-3">
+              <div className="bg-gray-100 flex justify-between py-8 px-4 rounded-lg border shadow flex-1">
+                <div className="">
+                  <Toggle
+                    onChange={() =>
+                      setEmployeeInfo((prev) => ({
+                        ...prev,
+                        fingerPrintEnabled: prev.fingerPrintEnabled ? 0 : 1,
+                      }))
+                    }
+                    value={employeeInfo.fingerPrintEnabled}
+                    disabled={employeeMutation.isLoading}
+                    checked={employeeInfo.fingerPrintEnabled ? true : false}
+                  />
+                  <h4>Fingerprint Check-in</h4>
+                </div>
+                {/* <p className="bg-white text-[15px] text-green-500 h-min w-min p-1 font-semibold rounded-lg italic">
+                  Pro
+                </p> */}
+              </div>
+              <div className="bg-gray-100 flex justify-between py-8 px-4 rounded-lg border shadow flex-1">
+                <div className="">
+                  <Toggle
+                    value={employeeInfo.qrCodeEnabled}
+                    onChange={() =>
+                      setEmployeeInfo((prev) => ({
+                        ...prev,
+                        qrCodeEnabled: prev.qrCodeEnabled ? 0 : 1,
+                      }))
+                    }
+                    disabled={employeeMutation.isLoading}
+                    checked={employeeInfo.qrCodeEnabled ? true : false}
+                  />
+                  <h4>QR Code Check-in</h4>
+                </div>
+                {/* <p className="bg-white text-[15px] text-green-500 h-min w-min p-1 font-semibold rounded-lg italic">
+                  Pro
+                </p> */}
+              </div>
             </div>
           </div>
         </div>

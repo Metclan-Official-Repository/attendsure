@@ -42,7 +42,7 @@ const CheckOut = () => {
       checkOut({
         sessionId: sessionId,
         checkOutTime: Date.now(),
-        userId: userId,
+        employeeId: userId,
       }),
     onSuccess: (data) => {
       if (data.data.code === 303) {
