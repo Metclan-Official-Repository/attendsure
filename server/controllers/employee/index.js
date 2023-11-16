@@ -73,6 +73,8 @@ const addEmployeePromise = (uploadImage, fields, businessId) => {
       managerId,
       employementStatus,
       locationId,
+      fingerPrintEnabled,
+      qrCodeEnabled,
     } = fields;
     const imageIsSet = 0;
     const isCheckedIn = 0;
@@ -99,11 +101,13 @@ const addEmployeePromise = (uploadImage, fields, businessId) => {
         employementStatus,
         parseInt(managerId),
         parseInt(locationId),
+        fingerPrintEnabled,
+        qrCodeEnabled,
         businessId
       ),
       (err, fields) => {
         if (err) {
-          reject(err);
+          reject(err.message);
         }
         resolve(fields);
       }
@@ -158,9 +162,7 @@ const addEmployee = (req, res) => {
         message: "success",
       });
     } catch (err) {
-      res
-        .status(400)
-        .json({ success: false, message: "success", data: "failure" });
+      res.status(400).json({ success: false, message: err });
     }
   });
 };
@@ -295,7 +297,9 @@ const editEmployee = (req, res) => {
       return;
     }
     try {
+      // Await employee's image upload
       const uploadImage = await imageUploadPromiseEdit(files, fields.imageUrl);
+      // Await adding employee
       const addEmployeePromise = await fileUploadPromiseEdit(
         uploadImage,
         fields,
@@ -323,10 +327,15 @@ const fetchEmployee = (req, res) => {
         .status(401)
         .json({ success: false, message: "failure", data: err });
     }
-    const { id } = req.query;
+    const { id, fingerPrintEnabled, qrCodeEnabled } = req.query;
     const businessId = req.businessId;
     connection.query(
-      fetchEmployeeQuery(Number(id), businessId),
+      fetchEmployeeQuery(
+        Number(id),
+        businessId,
+        fingerPrintEnabled,
+        qrCodeEnabled
+      ),
       (err, fields) => {
         if (err) {
           return res

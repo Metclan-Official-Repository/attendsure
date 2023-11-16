@@ -18,29 +18,39 @@ const addEmployeeQuery = (
   employmentStatus,
   managerId,
   locationId,
+  fingerPrintEnabled,
+  qrCodeEnabled,
   businessId
 ) => {
   return `
-     INSERT INTO employees(first_name, last_name, middle_name, mobile, email, address, city, job_title, department_id, pin, image_is_set, image_url, is_checkedin, shift_id, is_active, session_id, employment_status, manager_id,location_id, business_id)
-     VALUES("${firstName}", "${lastName}", "${middleName}", "${mobile}", "${email}", "${address}", "${city}", "${jobTitle}", ${departmentId}, "${pin}", ${imageIsSet}, "${imageUrl}",${isCheckedIn}, ${shiftId}, ${isActive}, ${sessionId}, "${employmentStatus}", ${managerId}, ${locationId}, ${businessId})
+     INSERT INTO employees(first_name, last_name, middle_name, mobile, email, address, city, job_title, department_id, pin, image_is_set, image_url, is_checkedin, shift_id, is_active, session_id, employment_status, manager_id,location_id, fingerprint_enabled, qrcode_enabled, business_id)
+     VALUES("${firstName}", "${lastName}", "${middleName}", "${mobile}", "${email}", "${address}", "${city}", "${jobTitle}", ${departmentId}, "${pin}", ${imageIsSet}, "${imageUrl}",${isCheckedIn}, ${shiftId}, ${isActive}, ${sessionId}, "${employmentStatus}", ${managerId}, ${locationId}, ${fingerPrintEnabled}, ${qrCodeEnabled}, ${businessId})
     `;
 };
-const fetchEmployeeQuery = (id, businessId) => {
+
+const fetchEmployeeQuery = (
+  id,
+  businessId,
+  fingerPrintEnabled,
+  qrCodeEnabled
+) => {
+  let query = `SELECT *`;
+  query += `
+    FROM employees 
+    WHERE business_id = ${businessId} 
+  `;
   if (id) {
-    return `
-    SELECT *
-    FROM employees
-    WHERE business_id = ${businessId} AND id=${id}
-    `;
-  } else {
-    return `
-    SELECT *
-    FROM employees
-    WHERE business_id = ${businessId}
-    ORDER BY employees.is_checkedin
-    DESC
-    `;
+    query += ` AND id=${id} `;
   }
+  if (parseInt(fingerPrintEnabled) === 1) {
+    query += ` AND fingerprint_enabled = ${1} `;
+  }
+  if (parseInt(qrCodeEnabled) === 1) {
+    query += ` AND qrcode_enabled = ${1} `;
+  }
+  query += ` ORDER BY employees.is_checkedin
+  DESC `;
+  return query;
 };
 
 const deleteEmployeeQuery = (id) => {
@@ -77,6 +87,7 @@ const editEmployeeQuery = (
     WHERE id = ${id} AND business_id = ${businessId}
   `;
 };
+const modifications = () => {};
 module.exports = {
   addEmployeeQuery,
   fetchEmployeeQuery,

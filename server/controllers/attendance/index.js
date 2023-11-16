@@ -11,6 +11,7 @@ const {
 const { fetchEmployeeQuery } = require("../../queries/employees");
 
 const checkIn = (req, res) => {
+  const CHECK_IN_TIME = Date.now() / 1000;
   const form = formidable({
     multiples: true,
   });
@@ -24,7 +25,7 @@ const checkIn = (req, res) => {
       });
     }
     //extract employee and checkin time from fields
-    const { employeeId, checkInTime, checkInMethod } = fields;
+    const { employeeId, checkInMethod } = fields;
     const businessId = req.businessId;
     //check if this employee has an existing checkin in this location
     connection.query(
@@ -59,7 +60,7 @@ const checkIn = (req, res) => {
             connection.query(
               checkInQuery(
                 Number(employeeId),
-                Number(checkInTime / 1000),
+                CHECK_IN_TIME,
                 results["0"].location_id,
                 checkInMethod,
                 Number(businessId)
@@ -123,6 +124,7 @@ const checkIn = (req, res) => {
 };
 
 const checkOut = (req, res) => {
+  const CHECK_OUT_TIME = Date.now() / 1000;
   const form = formidable({
     multiples: true,
   });
@@ -136,11 +138,11 @@ const checkOut = (req, res) => {
         data: err,
       });
     }
-    const { userId, checkOutTime, sessionId } = fields;
+    const { employeeId, sessionId } = fields;
     const businessId = req.businessId;
     //check if this employee has is already checkout in this location this location
     connection.query(
-      fetchEmployeeQuery(Number(userId), Number(businessId)),
+      fetchEmployeeQuery(Number(employeeId), Number(businessId)),
       (err, results) => {
         if (err) {
           res.status(400).json({
@@ -160,7 +162,7 @@ const checkOut = (req, res) => {
               });
             }
             connection.query(
-              checkOutQuery(Number(sessionId), Number(checkOutTime / 1000)),
+              checkOutQuery(Number(sessionId), CHECK_OUT_TIME),
               (err, fields) => {
                 if (err) {
                   connection.rollback(() => {
@@ -172,7 +174,7 @@ const checkOut = (req, res) => {
                   });
                 } else {
                   connection.query(
-                    removeSessionId(Number(userId)),
+                    removeSessionId(Number(employeeId)),
                     (err, fields) => {
                       if (err) {
                         connection.rollback(() => {

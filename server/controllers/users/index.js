@@ -71,7 +71,7 @@ const login = (req, res, next) => {
               _lastName: result[0].last_name,
               _isAdmin: result[0].is_owner,
               iat: Math.floor(Date.now() / 1000),
-              exp: Math.floor(Date.now() / 1000) + 60 * 60,
+              exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
             };
             const privateKey = fs.readFileSync(
               "./keys/private_key.pem",

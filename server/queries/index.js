@@ -34,6 +34,8 @@ const createEmployeesTable = () => {
     image_url VARCHAR(1000),
     is_checkedin TINYINT,
     shift_id INT,
+    qrcode_enabled TINYINT,
+    fingerprint_enabled TINYINT,
     manager_id INT NOT NULL,
     is_active TINYINT,
     location_id INT,
@@ -184,6 +186,23 @@ const employee_locations = () => {
   `;
 };
 const InsertRoles = () => {};
+const employees_fingerprint_template = () => {
+  return `
+    CREATE TABLE IF NOT EXISTS employees_fingerprint(
+      id INT NOT NULL AUTO_INCREMENT, 
+      fingerprint_template TEXT, 
+      finger_type VARCHAR(20) NOT NULL, 
+      employee_id INT NOT NULL, 
+      create_at INT, 
+      updated_at INT, 
+      PRIMARY KEY (id),
+      CONSTRAINT fk_fingerprint 
+      FOREIGN KEY(employee_id) 
+      REFERENCES employees(id)
+      ON DELETE CASCADE
+    );
+  `;
+};
 const createTables = () => {
   return `
     CREATE TABLE IF NOT EXISTS businesses(
