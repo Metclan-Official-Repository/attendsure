@@ -18,7 +18,8 @@ const OverviewCards = () => {
   });
   const overSummary = useQuery({
     queryKey: ["OVERVIEW-SUMMARY"],
-    queryFn: () => overviewSummary(),
+    queryFn: overviewSummary,
+    refetchOnWindowFocus: false,
     onSuccess: (data) => {
       setOverviewSummaryCount(data.data.data);
     },

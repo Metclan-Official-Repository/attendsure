@@ -12,6 +12,7 @@ const Dashboard = () => {
   const employeesQuery = useQuery({
     queryKey: ["EMPLOYEES"],
     queryFn: () => fetchEmployee(),
+    refetchOnWindowFocus: false,
   });
   return (
     <div className="mt-4 w-[95%] mx-auto">

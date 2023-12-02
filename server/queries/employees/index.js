@@ -87,10 +87,49 @@ const editEmployeeQuery = (
     WHERE id = ${id} AND business_id = ${businessId}
   `;
 };
-const modifications = () => {};
+const editEmployeeFingerprintQuery = (
+  employeeId,
+  fingerPrintEnabled,
+  businessId
+) => {
+  return `
+  UPDATE employees 
+  SET fingerprint_enabled = ${fingerPrintEnabled}
+  WHERE id = ${employeeId} && business_id = ${businessId}
+  `;
+};
+const editEmployeePinQuery = (employeeId, pin, businessId) => {
+  return `
+    UPDATE employees 
+    SET pin = ${pin}
+    WHERE id = ${employeeId} && business_id = ${businessId}
+  `;
+};
+const editEmployeeQrCodeQuery = (employeeId, qrCodeEnabled, businessId) => {
+  return `
+    UPDATE employees 
+    SET qrcode_enabled = ${qrCodeEnabled}
+    WHERE id = ${employeeId} && business_id = ${businessId}
+  `;
+};
+const fetchOneEmployeeQuery = (employeeId, businessId) => {
+  return `
+    SELECT *, employees.id AS employeeId, employees.first_name AS e_firstname, employees.middle_name AS e_middlename, employees.last_name AS e_lastname, shifts.name AS shift_name, departments.name AS department_name, business_locations.name AS location_name, users.first_name AS m_firstname, users.last_name AS m_lastname
+    FROM employees 
+    JOIN shifts ON shifts.id = employees.shift_id
+    JOIN departments ON departments.id = employees.department_id
+    JOIN users ON users.id = employees.manager_id
+    JOIN business_locations ON business_locations.id = employees.location_id
+    WHERE employees.id = ${employeeId} AND employees.business_id = ${businessId}
+  `;
+};
 module.exports = {
   addEmployeeQuery,
   fetchEmployeeQuery,
   editEmployeeQuery,
   deleteEmployeeQuery,
+  editEmployeeFingerprintQuery,
+  editEmployeePinQuery,
+  editEmployeeQrCodeQuery,
+  fetchOneEmployeeQuery,
 };

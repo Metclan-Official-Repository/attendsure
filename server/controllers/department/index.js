@@ -6,7 +6,6 @@ const {
   deleteDepartmentQuery,
   editDepartmentQuery,
 } = require("../../queries/department/index");
-
 const fetchDepartments = (req, res) => {
   const form = formidable({
     multiples: true,

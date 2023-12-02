@@ -1,5 +1,6 @@
 //importing hooks
 import { useRef, useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 //import media
 import DefaultPic from "../../assets/default.png";
@@ -9,7 +10,6 @@ import { baseUrl } from "../../api";
 import { checkRole } from "../../helper";
 //import icons
 import { IoLocationSharp } from "react-icons/io5";
-import { AiOutlineEdit, AiOutlineDelete } from "react-icons/ai";
 
 const EmployeeCard = ({
   firstName,
@@ -44,7 +44,10 @@ const EmployeeCard = ({
       imageRef.current.removeEventListener("load", updateImage);
   }, [imageLoaded]);
   return (
-    <div className="w-full bg-gray-100 border flex justify-center py-6 items-center rounded-lg px-4 transition hover:shadow cursor-pointer">
+    <Link
+      to={`/employees/${id}`}
+      className="w-full bg-gray-100 border flex justify-center py-6 items-center rounded-lg px-4 transition hover:shadow cursor-pointer"
+    >
       <div className="w-[80%] flex items-center flex-col">
         <div className="w-max mx-auto relative">
           <div className="rounded-full border-white border-2 w-20 h-20 md:h-28 md:w-28 md:min-h-28 md:min-w-28 overflow-hidden flex justify-center items-center mx-auto">
@@ -70,36 +73,8 @@ const EmployeeCard = ({
             <div className="font-poppins text-xs bg">{city}</div>
           </div>
         </div>
-        <div className="flex justify-center gap-6 mt-6">
-          {/* Checking role for editing employee*/}
-          {checkRole("employees.edit") ? (
-            <a
-              href={`/employees/edit?employeeId=${id}`}
-              className="p-3 bg-white rounded-full text-gray-600 hover:bg-gray-800 transition hover:text-white"
-            >
-              <AiOutlineEdit className="text-2xl" />
-            </a>
-          ) : (
-            <a className="p-3 bg-white rounded-full text-gray-600 transition text-gray-600 cursor-not-allowed">
-              <AiOutlineEdit className="text-2xl opacity-50" />
-            </a>
-          )}
-          {/* Checking role for deleting employee */}
-          {checkRole("employees.delete") ? (
-            <div
-              onClick={handleDelete}
-              className="p-3 bg-white rounded-full text-gray-600 hover:bg-gray-800 transition hover:text-white text-gray-600"
-            >
-              <AiOutlineDelete className="text-2xl  " />
-            </div>
-          ) : (
-            <div className="p-3 bg-white rounded-full text-gray-600 transition text-gray-600 cursor-not-allowed">
-              <AiOutlineDelete className="text-2xl   opacity-50" />
-            </div>
-          )}
-        </div>
       </div>
-    </div>
+    </Link>
   );
 };
 export default EmployeeCard;

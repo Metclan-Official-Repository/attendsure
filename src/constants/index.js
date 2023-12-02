@@ -19,6 +19,7 @@ import {
   Pricing,
   Roles,
   Reports,
+  EmployeeProfilePage,
   Shifts,
   Security,
   Summary,
@@ -114,6 +115,11 @@ const proctedRoutes = [
     path: "/employees/edit",
     element: EditEmployee,
     name: "employees.edit",
+  },
+  {
+    path: "/employees/:id",
+    element: EmployeeProfilePage,
+    name: "employee.view",
   },
   {
     path: "/shifts/new",

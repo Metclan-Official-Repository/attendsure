@@ -9,7 +9,11 @@ const {
   fetchEmployeeQuery,
   deleteEmployeeQuery,
   editEmployeeQuery,
-} = require("../../queries/employees/index");
+  editEmployeeFingerprintQuery,
+  editEmployeePinQuery,
+  editEmployeeQrCodeQuery,
+  fetchOneEmployeeQuery,
+} = require("../../queries/employees");
 
 const {
   addEmployeeLocationQuery,
@@ -368,9 +372,64 @@ const deleteEmployee = (req, res) => {
     });
   });
 };
+const editEmployeeFingerprintPromise = (
+  employeeId,
+  fingerPrintEnabled,
+  businessId
+) =>
+  new Promise((resolve, reject) => {
+    connection.query(
+      editEmployeeFingerprintQuery(
+        parseInt(employeeId),
+        parseInt(fingerPrintEnabled),
+        businessId
+      ),
+      (err, result) => {
+        if (err) {
+          reject(err.message);
+          return;
+        }
+        resolve(result);
+      }
+    );
+  });
+const editEmployeeFingerprint = (req, res) => {
+  form.parse(req, async (err, fields) => {
+    try {
+      if (err) throw new Error(err.message);
+      const businessId = req.businessId;
+      const { employeeId } = req.query;
+      const { fingerPrintEnabled } = fields;
+      const editOperation = await editEmployeeFingerprintPromise(
+        employeeId,
+        fingerPrintEnabled,
+        businessId
+      );
+      res.status(200).json({ success: true, data: editOperation });
+    } catch (err) {
+      res.status(401).json({ success: false, msg: err });
+    }
+  });
+};
+const fetchOneEmployee = (req, res) => {
+  const { employeeId } = req.query;
+  const businessId = req.businessId;
+  connection.query(
+    fetchOneEmployeeQuery(parseInt(employeeId), parseInt(businessId)),
+    (err, result) => {
+      if (err) {
+        res.status(401).json({ success: false, msg: err.message });
+        return;
+      }
+      res.status(200).json({ success: false, data: result["0"] });
+    }
+  );
+};
 module.exports = {
   addEmployee,
   editEmployee,
   deleteEmployee,
   fetchEmployee,
+  editEmployeeFingerprint,
+  fetchOneEmployee,
 };

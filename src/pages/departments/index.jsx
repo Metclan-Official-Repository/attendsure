@@ -16,7 +16,8 @@ import { checkRole } from "../../helper";
 const Department = ({ deleteItem }) => {
   const departmentsQuery = useQuery({
     queryKey: ["DEPARTMENTS"],
-    queryFn: () => fetchDepartments(),
+    queryFn: fetchDepartments,
+    refetchOnWindowFocus: false,
   });
   return (
     <div className="w-[95%] mx-auto">

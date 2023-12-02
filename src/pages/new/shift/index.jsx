@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 
 //import icons
 import { BiArrowBack } from "react-icons/bi";
+import { IoMdInformationCircle } from "react-icons/io";
 
 //importing services
 import { addShift } from "../../../api/shift";
@@ -23,6 +24,8 @@ const NewShift = () => {
     name: "",
     startTime: "9:00",
     endTime: "17:00",
+    earlyThreshold: "9:00",
+    lateThreshold: "17:00",
   });
   const [activeField, setActiveField] = useState(null);
   const handleChange = (e) =>
@@ -107,6 +110,44 @@ const NewShift = () => {
                 />
               </div>
             </div>
+            {/* <div className="flex justify-between mt-8">
+              <div className="flex flex-col">
+                <label className="text-sm flex items-center gap-1">
+                  Early Threshold{" "}
+                  <span>
+                    <IoMdInformationCircle />
+                  </span>
+                  <div>
+                    This
+                  </div>
+                </label>
+                <TimePicker
+                  value={shiftInfo.earlyThreshold}
+                  onChange={(value) =>
+                    setShiftInfo((prev) => ({ ...prev, earlyThreshold: value }))
+                  }
+                  required
+                  disabled={mutateShifts.isLoading}
+                />
+              </div>
+              <div className="flex flex-col">
+                <label className="text-sm flex items-center gap-1">
+                  Late Threshold{" "}
+                  <span>
+                    <IoMdInformationCircle />
+                  </span>
+                </label>
+                <TimePicker
+                  value={shiftInfo.lateThreshold}
+                  onChange={(value) =>
+                    setShiftInfo((prev) => ({ ...prev, lateThreshold: value }))
+                  }
+                  required
+                  className="border-none outline-none"
+                  disabled={mutateShifts.isLoading}
+                />
+              </div>
+            </div> */}
           </div>
         </div>
         <div className="flex justify-between w-full max-w-[600px] mt-8">

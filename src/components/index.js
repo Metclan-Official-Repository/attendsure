@@ -1,6 +1,9 @@
 export { default as AttendanceCard } from "./attendancecard/";
 export { default as DepartmentCard } from "./departmentcard/";
 export { default as EmployeeCard } from "./employeecard/";
+export { default as EmployeeDetails } from "./employee-details";
+export { default as EmployeeReport } from "./employeeReport";
+export { default as EmployeeSecurity } from "./employee-security";
 export { default as Feature } from "./features";
 export { default as Footer } from "./footer";
 export { default as Hero } from "./hero";

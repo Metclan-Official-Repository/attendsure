@@ -36,5 +36,4 @@ router.use("/reports", verifyAuth, reportsRoutes);
 router.use("/roles", verifyAuth, rolesRoutes);
 router.use("/shift", verifyAuth, shiftRoutes);
 router.use("/user", loginRoutes);
-
 module.exports = router;

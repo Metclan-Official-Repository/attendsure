@@ -32,4 +32,28 @@ const editEmployee = (data) => {
   });
   return response;
 };
-export { addEmployee, fetchEmployee, deleteEmployee, editEmployee };
+const editEmployeeFingerprint = (query, data) => {
+  const response = axios({
+    url: "employees/fingerprint/:id",
+    method: "put",
+    data: data,
+    params: query,
+  });
+  return response;
+};
+const fetchOneEmployee = (query) => {
+  const response = axios({
+    url: "employees/fetch/:id",
+    method: "get",
+    params: query,
+  });
+  return response;
+};
+export {
+  addEmployee,
+  fetchEmployee,
+  deleteEmployee,
+  editEmployee,
+  editEmployeeFingerprint,
+  fetchOneEmployee,
+};

@@ -21,7 +21,7 @@ export { default as Settings } from "./settings";
 export { default as Summary } from "./summary";
 export { default as Upgrade } from "./upgrade";
 export { default as Users } from "./users/";
-
+export { default as EmployeeProfilePage } from "./employee-profile-page";
 //pages for creating new items
 export { default as NewDepartment } from "./new/department/";
 export { default as NewEmployee } from "./new/employee/";

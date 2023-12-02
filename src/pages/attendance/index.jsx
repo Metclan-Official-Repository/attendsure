@@ -67,22 +67,35 @@ const Attendance = () => {
     queries: [
       // Query for all departments
       {
-        queryFn: () => fetchDepartments(),
+        queryFn: fetchDepartments,
         queryKey: ["DEPARTMENTS"],
+        refetchOnWindowFocus: false,
       },
       // Query for all employees
-      { queryFn: () => fetchEmployee(), queryKey: ["EMPLOYEES"] },
+      {
+        queryFn: fetchEmployee,
+        queryKey: ["EMPLOYEES"],
+        refetchOnWindowFocus: false,
+      },
       // Query for all shifts
-      { queryFn: () => fetchShift(), queryKey: ["SHIFTS"] },
+      {
+        queryFn: fetchShift,
+        queryKey: ["SHIFTS"],
+        refetchOnWindowFocus: false,
+      },
       // Query for all locations
-      { queryFn: () => fetchLocations(), queryKey: ["LOCATIONS"] },
+      {
+        queryFn: fetchLocations,
+        queryKey: ["LOCATIONS"],
+        refetchOnWindowFocus: false,
+      },
     ],
   });
   const attendanceSummaryQuery = useQuery({
     queryKey: ["ATTENDANCE_REPORTS"],
     queryFn: () => reportSummary.fetch(filters),
+    refetchOnWindowFocus: false,
     onSuccess: (data) => {
-      console.log(data.data.data);
       const formattedData = data.data.data.map(
         ({
           check_in,
